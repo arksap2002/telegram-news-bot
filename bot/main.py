@@ -7,30 +7,32 @@ from telegram.ext import (Updater,
                           CommandHandler,
                           MessageHandler,
                           Filters,
-                          CallbackQueryHandler)
+                          CallbackQueryHandler,
+                          CallbackContext)
 from bot.config import TG_TOKEN
 
+# Choose the topic message
+CHOOSE_THE_TOPIC = "Choose the topic"
 
-# buttons inits
-CALLBACK_BUTTON_SPORTS = "callback_button_sports"
-CALLBACK_BUTTON_POLITICS = "callback_button_politics"
-CALLBACK_BUTTON_OTHER = "callback_button_other"
+# array of buttons
+# TODO make the class
+TOPICS = [
+    ["Sports", "callback_button_sports"],
+    ["Politics", "callback_button_politics"]
+]
 
+# other button init
+OTHER = ["Other", "callback_button_other"]
 
-# list of buttons
-TITLES = {
-    CALLBACK_BUTTON_SPORTS: "Sports",
-    CALLBACK_BUTTON_POLITICS: "Politics",
-    CALLBACK_BUTTON_OTHER: "Other"
-}
+# back button init
+BACK = ["Back", "callback_button_back"]
 
 
 # start move
-def do_start(bot: Bot, update: Update):
-    bot.send_message(
-        chat_id=update.message.chat_id,
-        text="Choose the topic",
-        reply_markup=get_start_keyboard(),
+def do_start(update: Update, context: CallbackContext) -> None:
+    update.message.reply_text(
+        text=CHOOSE_THE_TOPIC,
+        reply_markup=get_start_keyboard()
     )
 
 
@@ -38,36 +40,52 @@ def do_start(bot: Bot, update: Update):
 def get_start_keyboard():
     keyboard = [
         [
-            InlineKeyboardButton(TITLES[CALLBACK_BUTTON_SPORTS], callback_data=CALLBACK_BUTTON_SPORTS),
-            InlineKeyboardButton(TITLES[CALLBACK_BUTTON_SPORTS], callback_data=CALLBACK_BUTTON_SPORTS),
+            InlineKeyboardButton(TOPICS[0][0], callback_data=TOPICS[0][1]),
+            InlineKeyboardButton(TOPICS[1][0], callback_data=TOPICS[1][1])
         ],
-        InlineKeyboardButton(TITLES[CALLBACK_BUTTON_OTHER], callback_data=CALLBACK_BUTTON_OTHER),
+        [
+            InlineKeyboardButton(OTHER[0], callback_data=OTHER[1])
+        ],
     ]
     return InlineKeyboardMarkup(keyboard)
 
 
-# processing of the start keyboard
-def keyboard_processing(bot: Bot, update: Update, chat_data=None, **kwargs):
+# back keyboard init
+def get_back_keyboard():
+    keyboard = [
+        [
+            InlineKeyboardButton(BACK[0], callback_data=BACK[1]),
+        ]
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
+
+# processing of the start and back keyboards
+def keyboard_processing(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
+    query.answer()
     data = query.data
-    if data == CALLBACK_BUTTON_SPORTS:
-        bot.send_message(
-            chat_id=update.message.chat_id,
-            text="Sports news:\n"
-                 "todo!",  # TODO
+    # topic push
+    for topic in TOPICS:
+        if data == topic[1]:
+            query.edit_message_text(
+                text=topic[0] + " news:\ntodo!",  # TODO find_news(sports)
+                reply_markup=get_back_keyboard()
+            )
+    # other push
+    if data == OTHER[1]:
+        query.edit_message_text(
+            text="Type the topic"
         )
-    if data == CALLBACK_BUTTON_POLITICS:
-        bot.send_message(
-            chat_id=update.message.chat_id,
-            text="Politics news:\n"
-                 "todo!",  # TODO
-        )
-    if data == CALLBACK_BUTTON_OTHER:
-        text = update.message.text
-        bot.send_message(
-            chat_id=update.message.chat_id,
-            text=text + "news:\n"
-                        "todo!",  # TODO
+        # topic = update.message.text TODO fix it!!!
+        # query.edit_message_text(
+        #     text=topic + " news:\ntodo!",  # TODO find_news(topics)
+        # )
+    # back push
+    if data == BACK[1]:  # TODO fix copy/paste
+        query.edit_message_text(
+            text=CHOOSE_THE_TOPIC,
+            reply_markup=get_start_keyboard()
         )
 
 
@@ -80,11 +98,8 @@ def main():
     bot = Bot(token=TG_TOKEN, )
     updater = Updater(bot=bot, )
 
-    start_handler = CommandHandler("start", do_start)
-    buttons_handler = CallbackQueryHandler(callback=keyboard_processing, pass_chat_data=True)
-
-    updater.dispatcher.add_handler(start_handler)
-    updater.dispatcher.add_handler(buttons_handler)
+    updater.dispatcher.add_handler(CommandHandler("start", do_start))
+    updater.dispatcher.add_handler(CallbackQueryHandler(keyboard_processing))
 
     # start input
     updater.start_polling()
