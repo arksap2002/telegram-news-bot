@@ -62,7 +62,6 @@ def do_add(update: Update, context: CallbackContext) -> None:
         text="Type a new topic",
         reply_markup=get_back_keyboard()
     )
-    # TODO fix input
 
 
 # delete move
