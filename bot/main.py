@@ -3,37 +3,47 @@ from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler, CallbackContext
 from bot.config import TG_TOKEN
 
-# Choose the topic message
+# Messages
 CHOOSE_THE_TOPIC = "Choose or type the topic that interests you 👇"
+CHOOSE_THE_LIST_TO_FIX = "Which topic's sources list do you want to fix? 🔧"
 
 
 # topic class
-class Topic:
-    def __init__(self, topic_name, button_name):
+class Theme:
+    def __init__(self, topic_name, sites):
         self.topic_name = topic_name
-        self.button_name = button_name
+        self.button_name = "callback button " + topic_name
+        self.sites = sites
 
 
 # array of buttons
 TOPICS = [
-    Topic("Sports", "callback_button_sports"),
-    Topic("Politics", "callback_button_politics"),
-    Topic("Weather", "callback_button_weather"),
-    Topic("Technology", "callback_button_technology"),
-    Topic("Finance", "callback_button_finance"),
-    Topic("Cinema", "callback_button_cinema"),
-    Topic("Music", "callback_button_music"),
-    Topic("Covid", "callback_button_covid"),
-    Topic("Culture", "callback_button_culture")
+    Theme("Sports", ["https://www.sports.ru", "https://www.skysports.com", "https://www.bbc.com/sport"]),
+    Theme("Politics", ["https://meduza.io", "https://www.nbcnews.com/politics", "https://edition.cnn.com/politics"]),
+    Theme("Weather", ["https://weather.com", "https://www.wunderground.com", "https://www.bbc.com/weather"]),
+    Theme("IT", ["https://habr.com/ru/all", "https://www.bbc.com/news/technology", "https://medium.com/"]),
+    Theme("Finance", ["https://finance.yahoo.com", "https://insight.factset.com", "https://www.stockgeist.ai"]),
+    Theme("Movies", ["https://www.euronews.com/programs/cinema", "https://www.arte.tv/en/videos/cinema/cinema-news",
+                     "https://www.empireonline.com/movies/news/"]),
+    Theme("Music", ["https://nac-cna.ca/en/discover/music", "https://www.nme.com/news/music",
+                    "https://www.rollingstone.com/music/music-news"]),
+    Theme("Covid", ["https://www.worldometers.info/coronavirus", "https://covid19.who.int",
+                    "https://www.un.org/en/coronavirus"]),
+    Theme("Culture", ["https://www.slice.ca/", "https://www.rollingstone.com/culture/culture-news",
+                      "https://www.euronews.com/lifestyle/culture"])
 ]
 
-BACK = Topic("Back to menu ⬅️", "callback_button_back")
+BACK_TO_START = Theme("Back to the start menu ⬅️", [])
+
+BACK_TO_SETTINGS = Theme("Back to the setting menu 🛠️", [])
 
 NUMBER_TOPICS_IN_THE_LINE = 3
 
 DELETE_MODE = False
 
 ADD_MODE = False
+
+SETTING_MODE = False
 
 
 # start move
@@ -49,8 +59,8 @@ def do_add(update: Update, context: CallbackContext) -> None:
     global ADD_MODE
     ADD_MODE = True
     update.message.reply_text(
-        text="Type a new topic",
-        reply_markup=get_back_keyboard()
+        text="Type a new topic ✏️",
+        reply_markup=get_back_to_start_keyboard()
     )
 
 
@@ -59,8 +69,8 @@ def do_delete(update: Update, context: CallbackContext) -> None:
     global DELETE_MODE
     DELETE_MODE = True
     update.message.reply_text(
-        text="Which topic do you want to delete",
-        reply_markup=get_delete_keyboard()
+        text="Which topic do you want to delete? 🖍",
+        reply_markup=get_command_keyboard()
     )
 
 
@@ -71,26 +81,37 @@ def do_help(update: Update, context: CallbackContext) -> None:
              "/start - go back to the topics menu 🔥\n" +
              "/add - add a new topic ➕\n" +
              "/delete - delete some topic ➖\n" +
+             "/setting - Configure the list of sources ⚙️\n" +
              "/help - enjoy the recursion ❗️",
-        reply_markup=get_back_keyboard()
+        reply_markup=get_back_to_start_keyboard()
+    )
+
+
+# settings move
+def do_settings(update: Update, context: CallbackContext) -> None:
+    global SETTING_MODE
+    SETTING_MODE = True
+    update.message.reply_text(
+        text=CHOOSE_THE_LIST_TO_FIX,
+        reply_markup=get_command_keyboard()
     )
 
 
 # input move
 def do_input(update: Update, context: CallbackContext) -> None:
-    global ADD_MODE, NUMBER_OF_THE_PICTURE
+    global ADD_MODE
     topic = update.message.text
     if ADD_MODE:
-        TOPICS.append(Topic(topic, "callback_button_" + topic))
+        TOPICS.append(Theme(topic, []))
         ADD_MODE = False
         update.message.reply_text(
-            text=topic + " successfully added",
-            reply_markup=get_back_keyboard()
+            text=topic + " successfully added! ✅\nAlso you can fill your sources list in the /settings mode 😜",
+            reply_markup=get_back_to_start_keyboard()
         )
     else:
         update.message.reply_text(
             text=news_message(topic),
-            reply_markup=get_back_keyboard()
+            reply_markup=get_back_to_start_keyboard()
         )
 
 
@@ -108,11 +129,11 @@ def fill_topics_keyboard():
     return keyboard
 
 
-# delete keyboard init
-def get_delete_keyboard():
+# delete and settings keyboard init
+def get_command_keyboard():
     keyboard = fill_topics_keyboard()
     # add back
-    keyboard.append([InlineKeyboardButton(BACK.topic_name, callback_data=BACK.button_name)])
+    keyboard.append([InlineKeyboardButton(BACK_TO_START.topic_name, callback_data=BACK_TO_START.button_name)])
     return InlineKeyboardMarkup(keyboard)
 
 
@@ -122,13 +143,23 @@ def get_start_keyboard():
     return InlineKeyboardMarkup(keyboard)
 
 
-# back keyboard init
-def get_back_keyboard():
-    keyboard = [
-        [
-            InlineKeyboardButton(BACK.topic_name, callback_data=BACK.button_name),
-        ]
-    ]
+# back to start keyboard init
+def get_back_to_start_keyboard():
+    keyboard = [[InlineKeyboardButton(BACK_TO_START.topic_name, callback_data=BACK_TO_START.button_name)]]
+    return InlineKeyboardMarkup(keyboard)
+
+
+# back to setting keyboard init
+def get_back_to_settings_keyboard():
+    keyboard = [[InlineKeyboardButton(BACK_TO_SETTINGS.topic_name, callback_data=BACK_TO_SETTINGS.button_name)]]
+    return InlineKeyboardMarkup(keyboard)
+
+
+# settings keyboard init
+def get_settings_keyboard():
+    keyboard = [[InlineKeyboardButton(BACK_TO_SETTINGS.topic_name, callback_data=BACK_TO_SETTINGS.button_name)],
+                [InlineKeyboardButton(BACK_TO_START.topic_name, callback_data=BACK_TO_START.button_name)]]
+    # add backs
     return InlineKeyboardMarkup(keyboard)
 
 
@@ -140,13 +171,21 @@ def redraw_to_start(query):
     )
 
 
+# redrawing the last message to the settings menu
+def redraw_to_settings(query):
+    query.edit_message_text(
+        text=CHOOSE_THE_LIST_TO_FIX,
+        reply_markup=get_command_keyboard()
+    )
+
+
 def news_message(topic):
     return "Hey, nice choice! 👍\nHere are some " + topic + " news:\n" + find_news(topic)
 
 
 # processing of the start and back keyboards
 def keyboard_processing(update: Update, context: CallbackContext) -> None:
-    global DELETE_MODE, ADD_MODE
+    global DELETE_MODE, ADD_MODE, SETTING_MODE
     query = update.callback_query
     query.answer()
     data = query.data
@@ -158,17 +197,30 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
                 TOPICS.remove(topic_class)
                 DELETE_MODE = False
                 redraw_to_start(query)
+            elif SETTING_MODE:
+                # settings mode
+                text = "Here is your list: 📜\n"
+                for site in topic_class.sites:
+                    text += site + '\n'
+                query.edit_message_text(
+                    text=text,
+                    reply_markup=get_settings_keyboard()
+                )
             else:
                 # news mode
                 query.edit_message_text(
                     text=news_message(topic_class.topic_name),
-                    reply_markup=get_back_keyboard()
+                    reply_markup=get_back_to_start_keyboard()
                 )
-    # back push
-    if data == BACK.button_name:
+    # back to start push
+    if data == BACK_TO_START.button_name:
         redraw_to_start(query)
         DELETE_MODE = False
         ADD_MODE = False
+        SETTING_MODE = False
+    # back to settings push
+    if data == BACK_TO_SETTINGS.button_name:
+        redraw_to_settings(query)
 
 
 # parsing call
@@ -178,13 +230,14 @@ def find_news(topic):
 
 
 def main() -> None:
-    bot = Bot(token=TG_TOKEN, )
-    updater = Updater(bot=bot, )
+    bot = Bot(token=TG_TOKEN)
+    updater = Updater(bot=bot)
 
     updater.dispatcher.add_handler(CommandHandler("start", do_start))
     updater.dispatcher.add_handler(CommandHandler("add", do_add))
     updater.dispatcher.add_handler(CommandHandler("delete", do_delete))
     updater.dispatcher.add_handler(CommandHandler("help", do_help))
+    updater.dispatcher.add_handler(CommandHandler("settings", do_settings))
     updater.dispatcher.add_handler(MessageHandler(Filters.text, do_input))
     updater.dispatcher.add_handler(CallbackQueryHandler(keyboard_processing))
 
