@@ -165,7 +165,7 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
 
 # parsing call
 def find_news(topic) -> None:
-    topic_tmp = topic  # TODO Slava's job here in the other file, i guess
+    topic_tmp = topic  # TODO Slava's job here in the other file, I guess
 
 
 def main() -> None:
