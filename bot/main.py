@@ -37,7 +37,9 @@ OTHER = Topic("Other", "callback_button_other")
 
 BACK = Topic("Back", "callback_button_back")
 
-number_topics_in_the_line = 3
+NUMBER_TOPICS_IN_THE_LINE = 3
+
+DELETE_MODE = False
 
 
 # start move
@@ -48,17 +50,50 @@ def do_start(update: Update, context: CallbackContext) -> None:
     )
 
 
+# add move
+def do_add(update: Update, context: CallbackContext) -> None:
+    update.message.reply_text(
+        text="Type the new topic",
+        reply_markup=get_back_keyboard()
+    )
+    # TODO fix input
+
+
+# delete move
+def do_delete(update: Update, context: CallbackContext) -> None:
+    global DELETE_MODE
+    DELETE_MODE = True
+    update.message.reply_text(
+        text="Which topic do you want to delete",
+        reply_markup=get_delete_keyboard()
+    )
+
+
 # start keyboard init
-def get_start_keyboard():
+def fill_topics_keyboard():
     keyboard = [[]]
     line_index = 0
     # fill topics
     for i in range(0, len(TOPICS)):
         keyboard[line_index].append(InlineKeyboardButton(TOPICS[i].topic_name, callback_data=TOPICS[i].button_name))
-        if (i % number_topics_in_the_line == number_topics_in_the_line - 1) and (i != len(TOPICS) - 1):
+        if (i % NUMBER_TOPICS_IN_THE_LINE == NUMBER_TOPICS_IN_THE_LINE - 1) and (i != len(TOPICS) - 1):
             # new line
             keyboard.append([])
             line_index += 1
+    return keyboard
+
+
+# delete keyboard init
+def get_delete_keyboard():
+    keyboard = fill_topics_keyboard()
+    # add back
+    keyboard.append([InlineKeyboardButton(BACK.topic_name, callback_data=BACK.button_name)])
+    return InlineKeyboardMarkup(keyboard)
+
+
+# start keyboard init
+def get_start_keyboard():
+    keyboard = fill_topics_keyboard()
     # add other
     keyboard.append([InlineKeyboardButton(OTHER.topic_name, callback_data=OTHER.button_name)])
     return InlineKeyboardMarkup(keyboard)
@@ -74,18 +109,32 @@ def get_back_keyboard():
     return InlineKeyboardMarkup(keyboard)
 
 
+# redrawing the last message to the start menu
+def redraw_to_start(query):
+    query.edit_message_text(
+        text=CHOOSE_THE_TOPIC,
+        reply_markup=get_start_keyboard()
+    )
+
+
 # processing of the start and back keyboards
 def keyboard_processing(update: Update, context: CallbackContext) -> None:
+    global DELETE_MODE
     query = update.callback_query
     query.answer()
     data = query.data
     # topic push
     for topic in TOPICS:
         if data == topic.button_name:
-            query.edit_message_text(
-                text=topic.topic_name + " news:\nSlava's job!",  # TODO Slava find_news(sports)
-                reply_markup=get_back_keyboard()
-            )
+            if DELETE_MODE:
+                TOPICS.remove(topic)
+                DELETE_MODE = False
+                redraw_to_start(query)
+            else:
+                query.edit_message_text(
+                    text=topic.topic_name + " news:\nSlava's job!",  # TODO Slava find_news(sports)
+                    reply_markup=get_back_keyboard()
+                )
     # other push
     if data == OTHER.button_name:
         query.edit_message_text(
@@ -96,11 +145,9 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
         #     text=topic + " news:\nSlava's job!",  # TODO Slava find_news(topics)
         # )
     # back push
-    if data == BACK.button_name:  # TODO fix copy/paste
-        query.edit_message_text(
-            text=CHOOSE_THE_TOPIC,
-            reply_markup=get_start_keyboard()
-        )
+    if data == BACK.button_name:
+        redraw_to_start(query)
+        DELETE_MODE = False
 
 
 # parsing call
@@ -113,6 +160,8 @@ def main() -> None:
     updater = Updater(bot=bot, )
 
     updater.dispatcher.add_handler(CommandHandler("start", do_start))
+    updater.dispatcher.add_handler(CommandHandler("add", do_add))
+    updater.dispatcher.add_handler(CommandHandler("delete", do_delete))
     updater.dispatcher.add_handler(CallbackQueryHandler(keyboard_processing))
 
     # start input
