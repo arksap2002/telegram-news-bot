@@ -1,18 +1,10 @@
 # imports
-from telegram import (Bot,
-                      Update,
-                      InlineKeyboardButton,
-                      InlineKeyboardMarkup)
-from telegram.ext import (Updater,
-                          CommandHandler,
-                          MessageHandler,
-                          Filters,
-                          CallbackQueryHandler,
-                          CallbackContext)
+from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler, CallbackContext
 from bot.config import TG_TOKEN
 
 # Choose the topic message
-CHOOSE_THE_TOPIC = "Choose the topic"
+CHOOSE_THE_TOPIC = "Choose or type the topic that interests you 👇"
 
 
 # topic class
@@ -35,9 +27,7 @@ TOPICS = [
     Topic("Culture", "callback_button_culture")
 ]
 
-OTHER = Topic("Other", "callback_button_other")
-
-BACK = Topic("Back", "callback_button_back")
+BACK = Topic("Back to menu ⬅️", "callback_button_back")
 
 NUMBER_TOPICS_IN_THE_LINE = 3
 
@@ -77,17 +67,18 @@ def do_delete(update: Update, context: CallbackContext) -> None:
 # help move
 def do_help(update: Update, context: CallbackContext) -> None:
     update.message.reply_text(
-        text="Here is a telegram bot that allows you to find out the latest news.\n\n" +
-             "You can choose the most interesting topic in the main menu if you will type /start.\n" +
-             "Also you can /add and /delete some topics.\n" +
-             "Enjoy!",
+        text="You can control me by sending these commands: 🤟\n" +
+             "/start - go back to the topics menu 🔥\n" +
+             "/add - add a new topic ➕\n" +
+             "/delete - delete some topic ➖\n" +
+             "/help - enjoy the recursion ❗️",
         reply_markup=get_back_keyboard()
     )
 
 
 # input move
 def do_input(update: Update, context: CallbackContext) -> None:
-    global ADD_MODE
+    global ADD_MODE, NUMBER_OF_THE_PICTURE
     topic = update.message.text
     if ADD_MODE:
         TOPICS.append(Topic(topic, "callback_button_" + topic))
@@ -98,7 +89,7 @@ def do_input(update: Update, context: CallbackContext) -> None:
         )
     else:
         update.message.reply_text(
-            text=topic + " news:\nSlava's job!",  # TODO Slava find_news(sports)
+            text=news_message(topic),
             reply_markup=get_back_keyboard()
         )
 
@@ -128,8 +119,6 @@ def get_delete_keyboard():
 # start keyboard init
 def get_start_keyboard():
     keyboard = fill_topics_keyboard()
-    # add other
-    keyboard.append([InlineKeyboardButton(OTHER.topic_name, callback_data=OTHER.button_name)])
     return InlineKeyboardMarkup(keyboard)
 
 
@@ -151,32 +140,30 @@ def redraw_to_start(query):
     )
 
 
+def news_message(topic):
+    return "Hey, nice choice! 👍\nHere are some " + topic + " news:\n" + find_news(topic)
+
+
 # processing of the start and back keyboards
 def keyboard_processing(update: Update, context: CallbackContext) -> None:
-    global DELETE_MODE
-    global ADD_MODE
+    global DELETE_MODE, ADD_MODE
     query = update.callback_query
     query.answer()
     data = query.data
     # topic push
-    for topic in TOPICS:
-        if data == topic.button_name:
+    for topic_class in TOPICS:
+        if data == topic_class.button_name:
             if DELETE_MODE:
                 # delete mode
-                TOPICS.remove(topic)
+                TOPICS.remove(topic_class)
                 DELETE_MODE = False
                 redraw_to_start(query)
             else:
                 # news mode
                 query.edit_message_text(
-                    text=topic.topic_name + " news:\nSlava's job!",  # TODO Slava find_news(sports)
+                    text=news_message(topic_class.topic_name),
                     reply_markup=get_back_keyboard()
                 )
-    # other push
-    if data == OTHER.button_name:
-        query.edit_message_text(
-            text="Type the topic"
-        )
     # back push
     if data == BACK.button_name:
         redraw_to_start(query)
@@ -185,8 +172,9 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
 
 
 # parsing call
-def find_news(topic) -> None:
-    topic_tmp = topic  # TODO Slava's job here in the other file, I guess
+def find_news(topic):
+    # TODO Slava's job here in the other file!!! You have to find the news about the current topic and return text
+    return "Slava's job!"
 
 
 def main() -> None:
