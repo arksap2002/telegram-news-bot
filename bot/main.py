@@ -138,10 +138,12 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
     for topic in TOPICS:
         if data == topic.button_name:
             if DELETE_MODE:
+                # delete mode
                 TOPICS.remove(topic)
                 DELETE_MODE = False
                 redraw_to_start(query)
             else:
+                # news mode
                 query.edit_message_text(
                     text=topic.topic_name + " news:\nSlava's job!",  # TODO Slava find_news(sports)
                     reply_markup=get_back_keyboard()
