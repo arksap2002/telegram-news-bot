@@ -5,8 +5,6 @@ from telegram import (Bot,
                       InlineKeyboardMarkup)
 from telegram.ext import (Updater,
                           CommandHandler,
-                          MessageHandler,
-                          Filters,
                           CallbackQueryHandler,
                           CallbackContext)
 from bot.config import TG_TOKEN
@@ -14,18 +12,32 @@ from bot.config import TG_TOKEN
 # Choose the topic message
 CHOOSE_THE_TOPIC = "Choose the topic"
 
+
+# topic class
+class Topic:
+    def __init__(self, topic_name, button_name):
+        self.topic_name = topic_name
+        self.button_name = button_name
+
+
 # array of buttons
-# TODO make the class
 TOPICS = [
-    ["Sports", "callback_button_sports"],
-    ["Politics", "callback_button_politics"]
+    Topic("Sports", "callback_button_sports"),
+    Topic("Politics", "callback_button_politics"),
+    Topic("Weather", "callback_button_weather"),
+    Topic("Technology", "callback_button_technology"),
+    Topic("Finance", "callback_button_finance"),
+    Topic("Cinema", "callback_button_cinema"),
+    Topic("Music", "callback_button_music"),
+    Topic("Covid", "callback_button_covid"),
+    Topic("Culture", "callback_button_culture")
 ]
 
-# other button init
-OTHER = ["Other", "callback_button_other"]
+OTHER = Topic("Other", "callback_button_other")
 
-# back button init
-BACK = ["Back", "callback_button_back"]
+BACK = Topic("Back", "callback_button_back")
+
+number_topics_in_the_line = 3
 
 
 # start move
@@ -38,15 +50,17 @@ def do_start(update: Update, context: CallbackContext) -> None:
 
 # start keyboard init
 def get_start_keyboard():
-    keyboard = [
-        [
-            InlineKeyboardButton(TOPICS[0][0], callback_data=TOPICS[0][1]),
-            InlineKeyboardButton(TOPICS[1][0], callback_data=TOPICS[1][1])
-        ],
-        [
-            InlineKeyboardButton(OTHER[0], callback_data=OTHER[1])
-        ],
-    ]
+    keyboard = [[]]
+    line_index = 0
+    # fill topics
+    for i in range(0, len(TOPICS)):
+        keyboard[line_index].append(InlineKeyboardButton(TOPICS[i].topic_name, callback_data=TOPICS[i].button_name))
+        if (i % number_topics_in_the_line == number_topics_in_the_line - 1) and (i != len(TOPICS) - 1):
+            # new line
+            keyboard.append([])
+            line_index += 1
+    # add other
+    keyboard.append([InlineKeyboardButton(OTHER.topic_name, callback_data=OTHER.button_name)])
     return InlineKeyboardMarkup(keyboard)
 
 
@@ -54,7 +68,7 @@ def get_start_keyboard():
 def get_back_keyboard():
     keyboard = [
         [
-            InlineKeyboardButton(BACK[0], callback_data=BACK[1]),
+            InlineKeyboardButton(BACK.topic_name, callback_data=BACK.button_name),
         ]
     ]
     return InlineKeyboardMarkup(keyboard)
@@ -67,22 +81,22 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
     data = query.data
     # topic push
     for topic in TOPICS:
-        if data == topic[1]:
+        if data == topic.button_name:
             query.edit_message_text(
-                text=topic[0] + " news:\ntodo!",  # TODO find_news(sports)
+                text=topic.topic_name + " news:\nSlava's job!",  # TODO Slava find_news(sports)
                 reply_markup=get_back_keyboard()
             )
     # other push
-    if data == OTHER[1]:
+    if data == OTHER.button_name:
         query.edit_message_text(
             text="Type the topic"
         )
         # topic = update.message.text TODO fix it!!!
         # query.edit_message_text(
-        #     text=topic + " news:\ntodo!",  # TODO find_news(topics)
+        #     text=topic + " news:\nSlava's job!",  # TODO Slava find_news(topics)
         # )
     # back push
-    if data == BACK[1]:  # TODO fix copy/paste
+    if data == BACK.button_name:  # TODO fix copy/paste
         query.edit_message_text(
             text=CHOOSE_THE_TOPIC,
             reply_markup=get_start_keyboard()
