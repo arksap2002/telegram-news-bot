@@ -5,6 +5,8 @@ from telegram import (Bot,
                       InlineKeyboardMarkup)
 from telegram.ext import (Updater,
                           CommandHandler,
+                          MessageHandler,
+                          Filters,
                           CallbackQueryHandler,
                           CallbackContext)
 from bot.config import TG_TOKEN
@@ -41,6 +43,8 @@ NUMBER_TOPICS_IN_THE_LINE = 3
 
 DELETE_MODE = False
 
+ADD_MODE = False
+
 
 # start move
 def do_start(update: Update, context: CallbackContext) -> None:
@@ -52,6 +56,8 @@ def do_start(update: Update, context: CallbackContext) -> None:
 
 # add move
 def do_add(update: Update, context: CallbackContext) -> None:
+    global ADD_MODE
+    ADD_MODE = True
     update.message.reply_text(
         text="Type a new topic",
         reply_markup=get_back_keyboard()
@@ -78,6 +84,24 @@ def do_help(update: Update, context: CallbackContext) -> None:
              "Enjoy!",
         reply_markup=get_back_keyboard()
     )
+
+
+# input move
+def do_input(update: Update, context: CallbackContext) -> None:
+    global ADD_MODE
+    topic = update.message.text
+    if ADD_MODE:
+        TOPICS.append(Topic(topic, "callback_button_" + topic))
+        ADD_MODE = False
+        update.message.reply_text(
+            text=topic + " successfully added",
+            reply_markup=get_back_keyboard()
+        )
+    else:
+        update.message.reply_text(
+            text=topic + " news:\nSlava's job!",  # TODO Slava find_news(sports)
+            reply_markup=get_back_keyboard()
+        )
 
 
 # start keyboard init
@@ -131,6 +155,7 @@ def redraw_to_start(query):
 # processing of the start and back keyboards
 def keyboard_processing(update: Update, context: CallbackContext) -> None:
     global DELETE_MODE
+    global ADD_MODE
     query = update.callback_query
     query.answer()
     data = query.data
@@ -153,14 +178,11 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
         query.edit_message_text(
             text="Type the topic"
         )
-        # topic = update.message.text TODO fix it!!!
-        # query.edit_message_text(
-        #     text=topic + " news:\nSlava's job!",  # TODO Slava find_news(topics)
-        # )
     # back push
     if data == BACK.button_name:
         redraw_to_start(query)
         DELETE_MODE = False
+        ADD_MODE = False
 
 
 # parsing call
@@ -176,6 +198,7 @@ def main() -> None:
     updater.dispatcher.add_handler(CommandHandler("add", do_add))
     updater.dispatcher.add_handler(CommandHandler("delete", do_delete))
     updater.dispatcher.add_handler(CommandHandler("help", do_help))
+    updater.dispatcher.add_handler(MessageHandler(Filters.text, do_input))
     updater.dispatcher.add_handler(CallbackQueryHandler(keyboard_processing))
 
     # start input
