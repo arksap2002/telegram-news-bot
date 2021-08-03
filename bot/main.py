@@ -104,11 +104,11 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
 
 
 # parsing call
-def find_news(topic):
+def find_news(topic) -> None:
     topic_tmp = topic  # TODO Slava's job here in the other file, i guess
 
 
-def main():
+def main() -> None:
     bot = Bot(token=TG_TOKEN, )
     updater = Updater(bot=bot, )
 
