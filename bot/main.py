@@ -53,7 +53,7 @@ def do_start(update: Update, context: CallbackContext) -> None:
 # add move
 def do_add(update: Update, context: CallbackContext) -> None:
     update.message.reply_text(
-        text="Type the new topic",
+        text="Type a new topic",
         reply_markup=get_back_keyboard()
     )
     # TODO fix input
@@ -66,6 +66,17 @@ def do_delete(update: Update, context: CallbackContext) -> None:
     update.message.reply_text(
         text="Which topic do you want to delete",
         reply_markup=get_delete_keyboard()
+    )
+
+
+# help move
+def do_help(update: Update, context: CallbackContext) -> None:
+    update.message.reply_text(
+        text="Here is a telegram bot that allows you to find out the latest news.\n\n" +
+             "You can choose the most interesting topic in the main menu if you will type /start.\n" +
+             "Also you can /add and /delete some topics.\n" +
+             "Enjoy!",
+        reply_markup=get_back_keyboard()
     )
 
 
@@ -162,6 +173,7 @@ def main() -> None:
     updater.dispatcher.add_handler(CommandHandler("start", do_start))
     updater.dispatcher.add_handler(CommandHandler("add", do_add))
     updater.dispatcher.add_handler(CommandHandler("delete", do_delete))
+    updater.dispatcher.add_handler(CommandHandler("help", do_help))
     updater.dispatcher.add_handler(CallbackQueryHandler(keyboard_processing))
 
     # start input
