@@ -33,45 +33,39 @@ TOPICS = [
                       "https://www.euronews.com/lifestyle/culture"])
 ]
 
+# extra buttons
 BACK_TO_START = Theme("Back to the start menu ⬅️", [])
-
 BACK_TO_SETTINGS = Theme("Back to the setting menu 🛠️", [])
+FIX_THE_LIST = Theme("Fix the list 📐", [])
 
 NUMBER_TOPICS_IN_THE_LINE = 3
 
+# mode flags
 DELETE_MODE = False
-
 ADD_MODE = False
+SETTINGS_MODE = False
 
-SETTING_MODE = False
+SETTINGS_TOPIC = Theme("", [])
 
 
 # start move
 def do_start(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text(
-        text=CHOOSE_THE_TOPIC,
-        reply_markup=get_start_keyboard()
-    )
+    exit_from_modes()
+    update.message.reply_text(text=CHOOSE_THE_TOPIC, reply_markup=get_start_keyboard())
 
 
 # add move
 def do_add(update: Update, context: CallbackContext) -> None:
     global ADD_MODE
     ADD_MODE = True
-    update.message.reply_text(
-        text="Type a new topic ✏️",
-        reply_markup=get_back_to_start_keyboard()
-    )
+    update.message.reply_text(text="Type a new topic ✏️", reply_markup=get_back_to_start_keyboard())
 
 
 # delete move
 def do_delete(update: Update, context: CallbackContext) -> None:
     global DELETE_MODE
     DELETE_MODE = True
-    update.message.reply_text(
-        text="Which topic do you want to delete? 🖍",
-        reply_markup=get_command_keyboard()
-    )
+    update.message.reply_text(text="Which topic do you want to delete? 🖍", reply_markup=get_command_keyboard())
 
 
 # help move
@@ -91,28 +85,28 @@ def do_help(update: Update, context: CallbackContext) -> None:
 def do_settings(update: Update, context: CallbackContext) -> None:
     global SETTING_MODE
     SETTING_MODE = True
-    update.message.reply_text(
-        text=CHOOSE_THE_LIST_TO_FIX,
-        reply_markup=get_command_keyboard()
-    )
+    update.message.reply_text(text=CHOOSE_THE_LIST_TO_FIX, reply_markup=get_command_keyboard())
 
 
 # input move
 def do_input(update: Update, context: CallbackContext) -> None:
     global ADD_MODE
-    topic = update.message.text
+    text = update.message.text
     if ADD_MODE:
-        TOPICS.append(Theme(topic, []))
-        ADD_MODE = False
+        TOPICS.append(Theme(text, []))
         update.message.reply_text(
-            text=topic + " successfully added! ✅\nAlso you can fill your sources list in the /settings mode 😜",
-            reply_markup=get_back_to_start_keyboard()
-        )
+            text=text + " successfully added! ✅\nAlso you can fill your sources list in the /settings mode 😜",
+            reply_markup=get_back_to_start_keyboard())
+    elif SETTING_MODE:
+        print(SETTINGS_TOPIC.topic_name)
+        for i in range(0, len(TOPICS)):
+            if TOPICS[i] == SETTINGS_TOPIC:
+                print("hi")
+                TOPICS[i].sites = []
+                TOPICS[i].sites = text.split('\n')
+        update.message.reply_text("List successfully fixed! ☑️", reply_markup=get_fix_the_list_keyboard())
     else:
-        update.message.reply_text(
-            text=news_message(topic),
-            reply_markup=get_back_to_start_keyboard()
-        )
+        update.message.reply_text(text=news_message(text), reply_markup=get_back_to_start_keyboard())
 
 
 # start keyboard init
@@ -157,26 +151,34 @@ def get_back_to_settings_keyboard():
 
 # settings keyboard init
 def get_settings_keyboard():
+    keyboard = [[InlineKeyboardButton(FIX_THE_LIST.topic_name, callback_data=FIX_THE_LIST.button_name)],
+                [InlineKeyboardButton(BACK_TO_SETTINGS.topic_name, callback_data=BACK_TO_SETTINGS.button_name)],
+                [InlineKeyboardButton(BACK_TO_START.topic_name, callback_data=BACK_TO_START.button_name)]]
+    return InlineKeyboardMarkup(keyboard)
+
+
+# fix the list keyboard init
+def get_fix_the_list_keyboard():
     keyboard = [[InlineKeyboardButton(BACK_TO_SETTINGS.topic_name, callback_data=BACK_TO_SETTINGS.button_name)],
                 [InlineKeyboardButton(BACK_TO_START.topic_name, callback_data=BACK_TO_START.button_name)]]
-    # add backs
     return InlineKeyboardMarkup(keyboard)
+
+
+def exit_from_modes():
+    global DELETE_MODE, ADD_MODE, SETTING_MODE
+    DELETE_MODE = False
+    ADD_MODE = False
+    SETTING_MODE = False
 
 
 # redrawing the last message to the start menu
 def redraw_to_start(query):
-    query.edit_message_text(
-        text=CHOOSE_THE_TOPIC,
-        reply_markup=get_start_keyboard()
-    )
+    query.edit_message_text(text=CHOOSE_THE_TOPIC, reply_markup=get_start_keyboard())
 
 
 # redrawing the last message to the settings menu
 def redraw_to_settings(query):
-    query.edit_message_text(
-        text=CHOOSE_THE_LIST_TO_FIX,
-        reply_markup=get_command_keyboard()
-    )
+    query.edit_message_text(text=CHOOSE_THE_LIST_TO_FIX, reply_markup=get_command_keyboard())
 
 
 def news_message(topic):
@@ -185,7 +187,7 @@ def news_message(topic):
 
 # processing of the start and back keyboards
 def keyboard_processing(update: Update, context: CallbackContext) -> None:
-    global DELETE_MODE, ADD_MODE, SETTING_MODE
+    global DELETE_MODE, ADD_MODE, SETTING_MODE, SETTINGS_TOPIC, topic_class
     query = update.callback_query
     query.answer()
     data = query.data
@@ -202,22 +204,21 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
                 text = "Here is your list: 📜\n"
                 for site in topic_class.sites:
                     text += site + '\n'
-                query.edit_message_text(
-                    text=text,
-                    reply_markup=get_settings_keyboard()
-                )
+                query.edit_message_text(text=text, reply_markup=get_settings_keyboard())
             else:
                 # news mode
-                query.edit_message_text(
-                    text=news_message(topic_class.topic_name),
-                    reply_markup=get_back_to_start_keyboard()
-                )
+                query.edit_message_text(text=news_message(topic_class.topic_name),
+                                        reply_markup=get_back_to_start_keyboard())
+    # fix the list
+    if data == FIX_THE_LIST.button_name:
+        SETTINGS_TOPIC = Theme(topic_class.topic_name, topic_class.sites)
+        query.edit_message_text(text="Please, type the list of sources, that you prefer 📚\n" +
+                                     "Each one in the new line without extra words.",
+                                reply_markup=get_fix_the_list_keyboard())
     # back to start push
     if data == BACK_TO_START.button_name:
         redraw_to_start(query)
-        DELETE_MODE = False
-        ADD_MODE = False
-        SETTING_MODE = False
+        exit_from_modes()
     # back to settings push
     if data == BACK_TO_SETTINGS.button_name:
         redraw_to_settings(query)
