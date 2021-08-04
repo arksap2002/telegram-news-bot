@@ -50,12 +50,13 @@ def remove_user_from_current(id_: int):
 
 
 def save_data():
+    global curr_time
     if time.time() - curr_time < save_frequency:
         print("now it's not time")
         return
     else:
         print("saving")
-        curr_time.__add__(time.time() - curr_time)
+        curr_time = time.time()
     for id_ in current_users.keys():
         all_users[id_] = copy.deepcopy(current_users[id_])
     with open(data_filename, 'wb') as f:
