@@ -1,7 +1,7 @@
 import time
 
 all_users = dict()
-current_users = dict()
+cur_users = dict()
 save_frequency = 10
 data_filename = "user_data.pkl"
 curr_time = time.time()
