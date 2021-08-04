@@ -1,9 +1,11 @@
 import time
+
 all_users = dict()
 current_users = dict()
-save_frequency = 100
+save_frequency = 10
 data_filename = "user_data.pkl"
 curr_time = time.time()
+
 
 # topic class
 class Topic:
@@ -44,3 +46,11 @@ LIST_SETTINGS = "Sources list settings 🗂"
 KEYBOARD_SETTINGS = "Keyboard settings ⌨️"
 CHANGE_THE_WIDTH = "Width of keyboard 📏"
 CHANGE_THE_PLACEMENT = "Placement of buttons 🔀"
+
+# mode flag
+# (0 - "start" mode, 1 - "add" mode, 2 - "delete mode", 3 - "settings" mode)
+#         (4 - "list settings" mode, 5 - "keyboard settings" mode)
+MODE = 0
+
+# what topics are you working to ("list settings" mode) and first pushed in the "swap" mode
+SETTINGS_TOPIC_NAME = ""
