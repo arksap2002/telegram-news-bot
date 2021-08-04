@@ -251,13 +251,11 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
             elif MODE == 5:
                 # "keyboard settings" mode
                 if SETTINGS_TOPIC_NAME == "":
-                    print(SETTINGS_TOPIC_NAME, topic_class.name, "1")
                     # saving first topic
                     SETTINGS_TOPIC_NAME = topic_class.name
                     query.edit_message_text(text="Good job, now choose the second one ✌️",
                                             reply_markup=get_topics_in_settings_keyboard())
                 else:
-                    print(SETTINGS_TOPIC_NAME, topic_class.name, "2")
                     # swap making
                     first_index = -1
                     for i in range(0, len(TOPICS)):
