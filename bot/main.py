@@ -19,6 +19,7 @@ def represents_int(s):
 def do_start(update: Update, context: CallbackContext) -> None:
     user = update.message.from_user
     add_to_current_or_create_user(user.id)
+    current_users[user.id].mode = 0
     update.message.reply_text(text=CHOOSE_THE_TOPIC, reply_markup=get_start_keyboard(update.message.from_user))
     save_data()
 
@@ -56,6 +57,7 @@ def do_help(update: Update, context: CallbackContext) -> None:
 
 # "settings" move
 def do_settings(update: Update, context: CallbackContext) -> None:
+    add_to_current_or_create_user(update.message.from_user.id)
     current_users[update.message.from_user.id].mode = 3
     update.message.reply_text(text=CHOOSE_THE_TYPE_OF_SETTINGS, reply_markup=get_settings_keyboard())
     save_data()
@@ -83,7 +85,7 @@ def do_input(update: Update, context: CallbackContext) -> None:
     elif current_users[user.id].mode == 4:
         # "list settings" mode
         for i in range(0, len(current_users[user.id].topics)):
-            if current_users[user.id][i].name == SETTINGS_TOPIC_NAME:
+            if current_users[user.id].topics[i].name == current_users[user.id].setting_topic_name:
                 current_users[user.id].topics[i].sites = []
                 current_users[user.id].topics[i].sites = text.split('\n')
         update.message.reply_text("List successfully fixed! ☑️", reply_markup=get_backs_keyboard())
@@ -215,7 +217,7 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
                 # "keyboard settings" mode
                 if current_users[user.id].setting_topic_name == "":
                     # saving first topic
-                    SETTINGS_TOPIC_NAME = topic_class.name
+                    current_users[user.id].setting_topic_name = topic_class.name
                     query.edit_message_text(text="Good job, now choose the second one ✌️",
                                             reply_markup=get_topics_in_settings_keyboard(user))
                 else:
@@ -282,7 +284,7 @@ def find_news(topic):
 def main() -> None:
     bot = Bot(token=TG_TOKEN)
     updater = Updater(bot=bot)
-    load_all_data()
+#    load_all_data()
     updater.dispatcher.add_handler(CommandHandler("start", do_start))
     updater.dispatcher.add_handler(CommandHandler("add", do_add))
     updater.dispatcher.add_handler(CommandHandler("delete", do_delete))
