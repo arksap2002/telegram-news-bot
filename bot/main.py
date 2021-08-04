@@ -80,7 +80,7 @@ def do_help(update: Update, context: CallbackContext) -> None:
              "/start - go back to the topics menu 🔥\n" +
              "/add - add a new topic ➕\n" +
              "/delete - delete some topic ➖\n" +
-             "/setting - Configure the list of sources ⚙️\n" +
+             "/settings - Configure the list of sources ⚙️\n" +
              "/help - enjoy the recursion ❗️",
         reply_markup=get_back_to_start_keyboard()
     )
