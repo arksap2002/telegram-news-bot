@@ -70,7 +70,7 @@ def do_add(update: Update, context: CallbackContext) -> None:
 def do_delete(update: Update, context: CallbackContext) -> None:
     global MODE
     MODE = 2
-    update.message.reply_text(text="Which topic do you want to delete? 🖍", reply_markup=get_command_keyboard())
+    update.message.reply_text(text="Which topic do you want to delete? 🖍", reply_markup=get_delete_keyboard())
 
 
 # "help" move
@@ -137,10 +137,17 @@ def fill_topics_keyboard():
     return keyboard
 
 
-# "delete" and "settings" keyboard init
-def get_command_keyboard():
+# "delete" keyboard init
+def get_delete_keyboard():
     keyboard = fill_topics_keyboard()
     keyboard.append([create_the_button(BACK_TO_START)])
+    return InlineKeyboardMarkup(keyboard)
+
+
+# "topics" and "backs" keyboard init
+def get_topics_and_backs_keyboard():
+    keyboard = fill_topics_keyboard()
+    keyboard.append([create_the_button(BACK_TO_SETTINGS)])
     return InlineKeyboardMarkup(keyboard)
 
 
@@ -165,10 +172,9 @@ def get_settings_keyboard():
                                  [create_the_button(BACK_TO_START)]])
 
 
-# "list settings" keyboard init
-def get_list_settings_keyboard():
-    return InlineKeyboardMarkup([[create_the_button(FIX_THE_LIST)], [create_the_button(BACK_TO_SETTINGS)],
-                                 [create_the_button(BACK_TO_START)]])
+# "view list" keyboard init
+def get_view_list_keyboard():
+    return InlineKeyboardMarkup([[create_the_button(FIX_THE_LIST)], [create_the_button(BACK_TO_SETTINGS)]])
 
 
 # "fix the list" and "change the width" keyboard init
@@ -178,7 +184,8 @@ def get_backs_keyboard():
 
 # "keyboard settings" keyboard init
 def get_keyboard_settings_keyboard():
-    return InlineKeyboardMarkup([[create_the_button(CHANGE_THE_WIDTH)], [create_the_button(CHANGE_THE_PLACEMENT)]])
+    return InlineKeyboardMarkup([[create_the_button(CHANGE_THE_WIDTH)], [create_the_button(CHANGE_THE_PLACEMENT)],
+                                 [create_the_button(BACK_TO_SETTINGS)]])
 
 
 # redrawing the last message to the "start menu"
@@ -218,7 +225,7 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
                 text = "Here is your list: 📜\n"
                 for site in topic_class.sites:
                     text += site + '\n'
-                query.edit_message_text(text=text, reply_markup=get_list_settings_keyboard())
+                query.edit_message_text(text=text, reply_markup=get_view_list_keyboard())
             else:
                 # "news" mode
                 query.edit_message_text(text=news_message(topic_class.name),
@@ -226,7 +233,7 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
     # "list settings" push
     if data == LIST_SETTINGS:
         MODE = 4
-        query.edit_message_text(text=CHOOSE_THE_LIST_TO_FIX, reply_markup=get_command_keyboard())
+        query.edit_message_text(text=CHOOSE_THE_LIST_TO_FIX, reply_markup=get_topics_and_backs_keyboard())
     if data == KEYBOARD_SETTINGS:
         MODE = 5
         query.edit_message_text(text="🙃", reply_markup=get_keyboard_settings_keyboard())
