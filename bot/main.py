@@ -49,7 +49,8 @@ CHANGE_THE_PLACEMENT = "Placement of buttons 🔀"
 #         (4 - "list settings" mode, 5 - "keyboard settings" mode)
 MODE = 0
 
-SETTINGS_TOPIC_NAME = Topic("", [])
+# what topics are you working to ("list settings" mode) and first pushed in the "swap" mode
+SETTINGS_TOPIC_NAME = ""
 
 
 # "start" move
@@ -88,8 +89,9 @@ def do_help(update: Update, context: CallbackContext) -> None:
 
 # "settings" move
 def do_settings(update: Update, context: CallbackContext) -> None:
-    global MODE
+    global MODE, SETTINGS_TOPIC_NAME
     MODE = 3
+    SETTINGS_TOPIC_NAME = ""
     update.message.reply_text(text=CHOOSE_THE_TYPE_OF_SETTINGS, reply_markup=get_settings_keyboard())
 
 
@@ -144,8 +146,8 @@ def get_delete_keyboard():
     return InlineKeyboardMarkup(keyboard)
 
 
-# "topics" and "backs" keyboard init
-def get_topics_and_backs_keyboard():
+# "topics" in "settings" mode keyboard init
+def get_topics_in_settings_keyboard():
     keyboard = fill_topics_keyboard()
     keyboard.append([create_the_button(BACK_TO_SETTINGS)])
     return InlineKeyboardMarkup(keyboard)
@@ -197,8 +199,9 @@ def redraw_to_start(query):
 
 # redrawing the last message to the "settings menu"
 def redraw_to_settings(query):
-    global MODE
+    global MODE, SETTINGS_TOPIC_NAME
     MODE = 3
+    SETTINGS_TOPIC_NAME = ""
     query.edit_message_text(text=CHOOSE_THE_TYPE_OF_SETTINGS, reply_markup=get_settings_keyboard())
 
 
@@ -206,15 +209,15 @@ def news_message(topic):
     return "Hey, nice choice! 👍\nHere are some " + topic + " news:\n" + find_news(topic)
 
 
-# processing of the "start" and "back" keyboards
+# processing of all buttons
 def keyboard_processing(update: Update, context: CallbackContext) -> None:
     global MODE, SETTINGS_TOPIC_NAME
     query = update.callback_query
     query.answer()
-    data = query.data
+    pushed_button_name = query.data
     # "topic" push
     for topic_class in TOPICS:
-        if data == topic_class.name:
+        if pushed_button_name == topic_class.name:
             if MODE == 2:
                 # "delete" mode
                 TOPICS.remove(topic_class)
@@ -226,30 +229,60 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
                 for site in topic_class.sites:
                     text += site + '\n'
                 query.edit_message_text(text=text, reply_markup=get_view_list_keyboard())
+            elif MODE == 5:
+                # "keyboard settings" mode
+                if SETTINGS_TOPIC_NAME == "":
+                    print(SETTINGS_TOPIC_NAME, topic_class.name, "1")
+                    # saving first topic
+                    SETTINGS_TOPIC_NAME = topic_class.name
+                    query.edit_message_text(text="Good job, now choose the second one ✌️",
+                                            reply_markup=get_topics_in_settings_keyboard())
+                else:
+                    print(SETTINGS_TOPIC_NAME, topic_class.name, "2")
+                    # swap making
+                    first_index = -1
+                    for i in range(0, len(TOPICS)):
+                        if TOPICS[i].name == SETTINGS_TOPIC_NAME or TOPICS[i].name == topic_class.name:
+                            if first_index == -1:
+                                # saving first topic
+                                first_index = i
+                            else:
+                                # swap making
+                                TOPICS[i], TOPICS[first_index] = TOPICS[first_index], TOPICS[i]
+                                break
+                    SETTINGS_TOPIC_NAME = ""
+                    query.edit_message_text(text="Choose two topics, that you want to swap 🔄",
+                                            reply_markup=get_topics_in_settings_keyboard())
+                    break
             else:
                 # "news" mode
                 query.edit_message_text(text=news_message(topic_class.name),
                                         reply_markup=get_back_to_start_keyboard())
     # "list settings" push
-    if data == LIST_SETTINGS:
+    if pushed_button_name == LIST_SETTINGS:
         MODE = 4
-        query.edit_message_text(text=CHOOSE_THE_LIST_TO_FIX, reply_markup=get_topics_and_backs_keyboard())
-    if data == KEYBOARD_SETTINGS:
+        query.edit_message_text(text=CHOOSE_THE_LIST_TO_FIX, reply_markup=get_topics_in_settings_keyboard())
+    # "keyboard settings" push
+    if pushed_button_name == KEYBOARD_SETTINGS:
         MODE = 5
         query.edit_message_text(text="🙃", reply_markup=get_keyboard_settings_keyboard())
     # "fix the list" pushed
-    if data == FIX_THE_LIST:
+    if pushed_button_name == FIX_THE_LIST:
         query.edit_message_text(text="Please, type the list of sources, that you prefer 📚\n" +
-                                     "Each one in the new line without extra words.",
+                                     "Each one in the new line without extra words",
                                 reply_markup=get_backs_keyboard())
     # "change the width" pushed
-    if data == CHANGE_THE_WIDTH:
-        query.edit_message_text(text="Please, type a new width. 🖊")
+    if pushed_button_name == CHANGE_THE_WIDTH:
+        query.edit_message_text(text="Please, type a new width 🖊")
+    # "change the placement" pushed
+    if pushed_button_name == CHANGE_THE_PLACEMENT:
+        query.edit_message_text(text="Choose two topics, that you want to swap 🔄",
+                                reply_markup=get_topics_in_settings_keyboard())
     # "back to start" pushed
-    if data == BACK_TO_START:
+    if pushed_button_name == BACK_TO_START:
         redraw_to_start(query)
     # "back to settings" pushed
-    if data == BACK_TO_SETTINGS:
+    if pushed_button_name == BACK_TO_SETTINGS:
         redraw_to_settings(query)
 
 
