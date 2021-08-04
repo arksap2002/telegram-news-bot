@@ -3,46 +3,8 @@ from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler, CallbackContext
 from bot.config import TG_TOKEN
 
-
-# topic class
-class Topic:
-    def __init__(self, name, sites):
-        self.name = name
-        self.sites = sites
-
-
-# array of buttons
-TOPICS = [
-    Topic("Sports", ["https://www.sports.ru", "https://www.skysports.com", "https://www.bbc.com/sport"]),
-    Topic("Politics", ["https://meduza.io", "https://www.nbcnews.com/politics", "https://edition.cnn.com/politics"]),
-    Topic("Weather", ["https://weather.com", "https://www.wunderground.com", "https://www.bbc.com/weather"]),
-    Topic("IT", ["https://habr.com/ru/all", "https://www.bbc.com/news/technology", "https://medium.com/"]),
-    Topic("Finance", ["https://finance.yahoo.com", "https://insight.factset.com", "https://www.stockgeist.ai"]),
-    Topic("Movies", ["https://www.euronews.com/programs/cinema", "https://www.arte.tv/en/videos/cinema/cinema-news",
-                     "https://www.empireonline.com/movies/news/"]),
-    Topic("Music", ["https://nac-cna.ca/en/discover/music", "https://www.nme.com/news/music",
-                    "https://www.rollingstone.com/music/music-news"]),
-    Topic("Covid", ["https://www.worldometers.info/coronavirus", "https://covid19.who.int",
-                    "https://www.un.org/en/coronavirus"]),
-    Topic("Culture", ["https://www.slice.ca/", "https://www.rollingstone.com/culture/culture-news",
-                      "https://www.euronews.com/lifestyle/culture"])
-]
-
-# messages
-CHOOSE_THE_TOPIC = "Choose or type the topic that interests you 👇"
-CHOOSE_THE_LIST_TO_FIX = "Which topic's sources list do you want to fix? 🔧"
-CHOOSE_THE_TYPE_OF_SETTINGS = "Yo, welcome to the settings!\nSet me up for yourself! 🤙"
-
-WIDTH_OF_KEYBOARD = 3
-
-# extra button names
-BACK_TO_START = "Back to the start menu ⬅️"
-BACK_TO_SETTINGS = "Back to the setting menu 🛠"
-FIX_THE_LIST = "Fix the list 📐"
-LIST_SETTINGS = "Sources list settings 🗂"
-KEYBOARD_SETTINGS = "Keyboard settings ⌨️"
-CHANGE_THE_WIDTH = "Width of keyboard 📏"
-CHANGE_THE_PLACEMENT = "Placement of buttons 🔀"
+from globals import *
+from data_processing.loading import *
 
 # mode flag
 # (0 - "start" mode, 1 - "add" mode, 2 - "delete mode", 3 - "settings" mode)
@@ -65,12 +27,14 @@ def represents_int(s):
 def do_start(update: Update, context: CallbackContext) -> None:
     global MODE
     MODE = 0
-    update.message.reply_text(text=CHOOSE_THE_TOPIC, reply_markup=get_start_keyboard())
+    add_to_current_or_create_user(update.message.from_user.id)
+    update.message.reply_text(text=CHOOSE_THE_TOPIC, reply_markup=get_start_keyboard(update.message.from_user))
 
 
 # "add" move
 def do_add(update: Update, context: CallbackContext) -> None:
     global MODE
+    add_to_current_or_create_user(update.message.from_user.id)
     MODE = 1
     update.message.reply_text(text="Type a new topic ✏️", reply_markup=get_back_to_start_keyboard())
 
@@ -78,8 +42,11 @@ def do_add(update: Update, context: CallbackContext) -> None:
 # "delete" move
 def do_delete(update: Update, context: CallbackContext) -> None:
     global MODE
+    add_to_current_or_create_user(update.message.from_user.id)
+
     MODE = 2
-    update.message.reply_text(text="Which topic do you want to delete? 🖍", reply_markup=get_delete_keyboard())
+    update.message.reply_text(text="Which topic do you want to delete? 🖍",
+                              reply_markup=get_delete_keyboard(update.message.from_user))
 
 
 # "help" move
@@ -107,14 +74,16 @@ def do_settings(update: Update, context: CallbackContext) -> None:
 def do_input(update: Update, context: CallbackContext) -> None:
     global MODE, WIDTH_OF_KEYBOARD
     text = update.message.text
+    user = update.message.from_user
+    add_to_current_or_create_user(user.id)
     if MODE == 1:
         # "add" mode
         is_new = True
-        for topic_class in TOPICS:
+        for topic_class in current_users[user.id]:
             if topic_class.name == text:
                 is_new = False
         if is_new:
-            TOPICS.append(Topic(text, []))
+            add_theme(user.id, Topic(text, []))
             update.message.reply_text(
                 text=text + " successfully added! ✅\nAlso you can fill your sources list in the /settings mode 😜",
                 reply_markup=get_back_to_start_keyboard())
@@ -123,10 +92,10 @@ def do_input(update: Update, context: CallbackContext) -> None:
                                       reply_markup=get_back_to_start_keyboard())
     elif MODE == 4:
         # "list settings" mode
-        for i in range(0, len(TOPICS)):
-            if TOPICS[i].name == SETTINGS_TOPIC_NAME:
-                TOPICS[i].sites = []
-                TOPICS[i].sites = text.split('\n')
+        for i in range(0, len(current_users[user.id])):
+            if current_users[user.id][i].name == SETTINGS_TOPIC_NAME:
+                current_users[user.id][i].sites = []
+                current_users[user.id][i].sites = text.split('\n')
         update.message.reply_text("List successfully fixed! ☑️", reply_markup=get_backs_keyboard())
     elif MODE == 5:
         # "new width" mode
@@ -145,13 +114,13 @@ def create_the_button(name):
 
 
 # "start" keyboard init
-def fill_topics_keyboard():
+def fill_topics_keyboard(user):
     keyboard = [[]]
     line_index = 0
     # fill topics
-    for i in range(0, len(TOPICS)):
-        keyboard[line_index].append(create_the_button(TOPICS[i].name))
-        if (i % WIDTH_OF_KEYBOARD == WIDTH_OF_KEYBOARD - 1) and (i != len(TOPICS) - 1):
+    for i in range(0, len(current_users[user.id])):
+        keyboard[line_index].append(create_the_button(current_users[user.id][i].name))
+        if (i % WIDTH_OF_KEYBOARD == WIDTH_OF_KEYBOARD - 1) and (i != len(current_users[user.id]) - 1):
             # new line
             keyboard.append([])
             line_index += 1
@@ -159,22 +128,22 @@ def fill_topics_keyboard():
 
 
 # "delete" keyboard init
-def get_delete_keyboard():
-    keyboard = fill_topics_keyboard()
+def get_delete_keyboard(user):
+    keyboard = fill_topics_keyboard(user)
     keyboard.append([create_the_button(BACK_TO_START)])
     return InlineKeyboardMarkup(keyboard)
 
 
 # "topics" in "settings" mode keyboard init
-def get_topics_in_settings_keyboard():
-    keyboard = fill_topics_keyboard()
+def get_topics_in_settings_keyboard(user):
+    keyboard = fill_topics_keyboard(user)
     keyboard.append([create_the_button(BACK_TO_SETTINGS)])
     return InlineKeyboardMarkup(keyboard)
 
 
 # "start" keyboard init
-def get_start_keyboard():
-    return InlineKeyboardMarkup(fill_topics_keyboard())
+def get_start_keyboard(user):
+    return InlineKeyboardMarkup(fill_topics_keyboard(user))
 
 
 # "back to start" keyboard init
@@ -213,7 +182,7 @@ def get_keyboard_settings_keyboard():
 def redraw_to_start(query):
     global MODE
     MODE = 0
-    query.edit_message_text(text=CHOOSE_THE_TOPIC, reply_markup=get_start_keyboard())
+    query.edit_message_text(text=CHOOSE_THE_TOPIC, reply_markup=get_start_keyboard(query.from_user))
 
 
 # redrawing the last message to the "settings menu"
@@ -234,12 +203,14 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     query.answer()
     pushed_button_name = query.data
+    user = query.from_user
+    add_to_current_or_create_user(user.id)
     # "topic" push
-    for topic_class in TOPICS:
+    for topic_class in current_users[user.id]:
         if pushed_button_name == topic_class.name:
             if MODE == 2:
                 # "delete" mode
-                TOPICS.remove(topic_class)
+                remove_theme(user.id, topic_class)
                 redraw_to_start(query)
             elif MODE == 4:
                 # "list settings" mode
@@ -255,23 +226,27 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
                     # saving first topic
                     SETTINGS_TOPIC_NAME = topic_class.name
                     query.edit_message_text(text="Good job, now choose the second one ✌️",
-                                            reply_markup=get_topics_in_settings_keyboard())
+                                            reply_markup=get_topics_in_settings_keyboard(user))
                 else:
                     print(SETTINGS_TOPIC_NAME, topic_class.name, "2")
                     # swap making
                     first_index = -1
-                    for i in range(0, len(TOPICS)):
-                        if TOPICS[i].name == SETTINGS_TOPIC_NAME or TOPICS[i].name == topic_class.name:
+                    for i in range(0, len(current_users[user.id])):
+                        if current_users[user.id][i].name == SETTINGS_TOPIC_NAME or current_users[user.id][
+                            i].name == topic_class.name:
                             if first_index == -1:
                                 # saving first topic
                                 first_index = i
                             else:
                                 # swap making
-                                TOPICS[i], TOPICS[first_index] = TOPICS[first_index], TOPICS[i]
+                                current_users[user.id][i], current_users[user.id][first_index] = current_users[user.id][
+                                                                                                     first_index], \
+                                                                                                 current_users[user.id][
+                                                                                                     i]
                                 break
                     SETTINGS_TOPIC_NAME = ""
                     query.edit_message_text(text="Choose two topics, that you want to swap 🔄",
-                                            reply_markup=get_topics_in_settings_keyboard())
+                                            reply_markup=get_topics_in_settings_keyboard(user))
                     break
             else:
                 # "news" mode
@@ -280,7 +255,7 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
     # "list settings" push
     if pushed_button_name == LIST_SETTINGS:
         MODE = 4
-        query.edit_message_text(text=CHOOSE_THE_LIST_TO_FIX, reply_markup=get_topics_in_settings_keyboard())
+        query.edit_message_text(text=CHOOSE_THE_LIST_TO_FIX, reply_markup=get_topics_in_settings_keyboard(user))
     # "keyboard settings" push
     if pushed_button_name == KEYBOARD_SETTINGS:
         MODE = 5
@@ -296,7 +271,7 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
     # "change the placement" pushed
     if pushed_button_name == CHANGE_THE_PLACEMENT:
         query.edit_message_text(text="Choose two topics, that you want to swap 🔄",
-                                reply_markup=get_topics_in_settings_keyboard())
+                                reply_markup=get_topics_in_settings_keyboard(user))
     # "back to start" pushed
     if pushed_button_name == BACK_TO_START:
         redraw_to_start(query)
