@@ -212,8 +212,8 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
                 # "delete" mode
                 TOPICS.remove(topic_class)
                 redraw_to_start(query)
-            elif MODE == 3:
-                # "settings" mode
+            elif MODE == 4:
+                # "list settings" mode
                 SETTINGS_TOPIC_NAME = topic_class.name
                 text = "Here is your list: 📜\n"
                 for site in topic_class.sites:
