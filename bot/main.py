@@ -28,9 +28,10 @@ TOPICS = [
                       "https://www.euronews.com/lifestyle/culture"])
 ]
 
-# Messages
+# messages
 CHOOSE_THE_TOPIC = "Choose or type the topic that interests you 👇"
 CHOOSE_THE_LIST_TO_FIX = "Which topic's sources list do you want to fix? 🔧"
+CHOOSE_THE_TYPE_OF_SETTINGS = "Yo, welcome to the settings!\nSet me up for yourself! 🤙"
 
 WIDTH_OF_KEYBOARD = 3
 
@@ -38,35 +39,41 @@ WIDTH_OF_KEYBOARD = 3
 BACK_TO_START = "Back to the start menu ⬅️"
 BACK_TO_SETTINGS = "Back to the setting menu 🛠"
 FIX_THE_LIST = "Fix the list 📐"
+LIST_SETTINGS = "Sources list settings 🗂"
+KEYBOARD_SETTINGS = "Keyboard settings ⌨️"
+CHANGE_THE_WIDTH = "Width of keyboard 📏"
+CHANGE_THE_PLACEMENT = "Placement of buttons 🔀"
 
-# mode flag (0 - start mode, 1 - add mode, 2 - delete mode, 3 - settings mode)
+# mode flag
+# (0 - "start" mode, 1 - "add" mode, 2 - "delete mode", 3 - "settings" mode)
+#         (4 - "list settings" mode, 5 - "keyboard settings" mode)
 MODE = 0
 
 SETTINGS_TOPIC_NAME = Topic("", [])
 
 
-# start move
+# "start" move
 def do_start(update: Update, context: CallbackContext) -> None:
     global MODE
     MODE = 0
     update.message.reply_text(text=CHOOSE_THE_TOPIC, reply_markup=get_start_keyboard())
 
 
-# add move
+# "add" move
 def do_add(update: Update, context: CallbackContext) -> None:
     global MODE
     MODE = 1
     update.message.reply_text(text="Type a new topic ✏️", reply_markup=get_back_to_start_keyboard())
 
 
-# delete move
+# "delete" move
 def do_delete(update: Update, context: CallbackContext) -> None:
     global MODE
     MODE = 2
     update.message.reply_text(text="Which topic do you want to delete? 🖍", reply_markup=get_command_keyboard())
 
 
-# help move
+# "help" move
 def do_help(update: Update, context: CallbackContext) -> None:
     update.message.reply_text(
         text="You can control me by sending these commands: 🤟\n" +
@@ -79,30 +86,34 @@ def do_help(update: Update, context: CallbackContext) -> None:
     )
 
 
-# settings move
+# "settings" move
 def do_settings(update: Update, context: CallbackContext) -> None:
     global MODE
     MODE = 3
-    update.message.reply_text(text=CHOOSE_THE_LIST_TO_FIX, reply_markup=get_command_keyboard())
+    update.message.reply_text(text=CHOOSE_THE_TYPE_OF_SETTINGS, reply_markup=get_settings_keyboard())
 
 
-# input move
+# "input" move
 def do_input(update: Update, context: CallbackContext) -> None:
-    global MODE
+    global MODE, WIDTH_OF_KEYBOARD
     text = update.message.text
     if MODE == 1:
-        # add mode
+        # "add" mode
         TOPICS.append(Topic(text, []))
         update.message.reply_text(
             text=text + " successfully added! ✅\nAlso you can fill your sources list in the /settings mode 😜",
             reply_markup=get_back_to_start_keyboard())
-    elif MODE == 3:
-        # settings mode
+    elif MODE == 4:
+        # "list settings" mode
         for i in range(0, len(TOPICS)):
             if TOPICS[i].name == SETTINGS_TOPIC_NAME:
                 TOPICS[i].sites = []
                 TOPICS[i].sites = text.split('\n')
-        update.message.reply_text("List successfully fixed! ☑️", reply_markup=get_fix_the_list_keyboard())
+        update.message.reply_text("List successfully fixed! ☑️", reply_markup=get_backs_keyboard())
+    elif MODE == 5:
+        # "new width" mode
+        WIDTH_OF_KEYBOARD = int(text)
+        update.message.reply_text("Width successfully changed! 👌️", reply_markup=get_backs_keyboard())
     else:
         # input the topic
         update.message.reply_text(text=news_message(text), reply_markup=get_back_to_start_keyboard())
@@ -112,7 +123,7 @@ def create_the_button(name):
     return InlineKeyboardButton(name, callback_data=name)
 
 
-# start keyboard init
+# "start" keyboard init
 def fill_topics_keyboard():
     keyboard = [[]]
     line_index = 0
@@ -126,90 +137,113 @@ def fill_topics_keyboard():
     return keyboard
 
 
-# delete and settings keyboard init
+# "delete" and "settings" keyboard init
 def get_command_keyboard():
     keyboard = fill_topics_keyboard()
     keyboard.append([create_the_button(BACK_TO_START)])
     return InlineKeyboardMarkup(keyboard)
 
 
-# start keyboard init
+# "start" keyboard init
 def get_start_keyboard():
     return InlineKeyboardMarkup(fill_topics_keyboard())
 
 
-# back to start keyboard init
+# "back to start" keyboard init
 def get_back_to_start_keyboard():
     return InlineKeyboardMarkup([[create_the_button(BACK_TO_START)]])
 
 
-# back to setting keyboard init
+# "back to setting" keyboard init
 def get_back_to_settings_keyboard():
     return InlineKeyboardMarkup([[create_the_button(BACK_TO_SETTINGS)]])
 
 
-# settings keyboard init
+# "settings" keyboard init
 def get_settings_keyboard():
+    return InlineKeyboardMarkup([[create_the_button(LIST_SETTINGS)], [create_the_button(KEYBOARD_SETTINGS)],
+                                 [create_the_button(BACK_TO_START)]])
+
+
+# "list settings" keyboard init
+def get_list_settings_keyboard():
     return InlineKeyboardMarkup([[create_the_button(FIX_THE_LIST)], [create_the_button(BACK_TO_SETTINGS)],
                                  [create_the_button(BACK_TO_START)]])
 
 
-# fix the list keyboard init
-def get_fix_the_list_keyboard():
+# "fix the list" and "change the width" keyboard init
+def get_backs_keyboard():
     return InlineKeyboardMarkup([[create_the_button(BACK_TO_SETTINGS)], [create_the_button(BACK_TO_START)]])
 
 
-# redrawing the last message to the start menu
+# "keyboard settings" keyboard init
+def get_keyboard_settings_keyboard():
+    return InlineKeyboardMarkup([[create_the_button(CHANGE_THE_WIDTH)], [create_the_button(CHANGE_THE_PLACEMENT)]])
+
+
+# redrawing the last message to the "start menu"
 def redraw_to_start(query):
+    global MODE
+    MODE = 0
     query.edit_message_text(text=CHOOSE_THE_TOPIC, reply_markup=get_start_keyboard())
 
 
-# redrawing the last message to the settings menu
+# redrawing the last message to the "settings menu"
 def redraw_to_settings(query):
-    query.edit_message_text(text=CHOOSE_THE_LIST_TO_FIX, reply_markup=get_command_keyboard())
+    global MODE
+    MODE = 3
+    query.edit_message_text(text=CHOOSE_THE_TYPE_OF_SETTINGS, reply_markup=get_settings_keyboard())
 
 
 def news_message(topic):
     return "Hey, nice choice! 👍\nHere are some " + topic + " news:\n" + find_news(topic)
 
 
-# processing of the start and back keyboards
+# processing of the "start" and "back" keyboards
 def keyboard_processing(update: Update, context: CallbackContext) -> None:
     global MODE, SETTINGS_TOPIC_NAME
     query = update.callback_query
     query.answer()
     data = query.data
-    # topic push
+    # "topic" push
     for topic_class in TOPICS:
         if data == topic_class.name:
             if MODE == 2:
-                # delete mode
+                # "delete" mode
                 TOPICS.remove(topic_class)
                 redraw_to_start(query)
             elif MODE == 3:
-                # settings mode
+                # "settings" mode
                 SETTINGS_TOPIC_NAME = topic_class.name
                 text = "Here is your list: 📜\n"
                 for site in topic_class.sites:
                     text += site + '\n'
-                query.edit_message_text(text=text, reply_markup=get_settings_keyboard())
+                query.edit_message_text(text=text, reply_markup=get_list_settings_keyboard())
             else:
-                # news mode
+                # "news" mode
                 query.edit_message_text(text=news_message(topic_class.name),
                                         reply_markup=get_back_to_start_keyboard())
-    # fix the list
+    # "list settings" push
+    if data == LIST_SETTINGS:
+        MODE = 4
+        query.edit_message_text(text=CHOOSE_THE_LIST_TO_FIX, reply_markup=get_command_keyboard())
+    if data == KEYBOARD_SETTINGS:
+        MODE = 5
+        query.edit_message_text(text="🙃", reply_markup=get_keyboard_settings_keyboard())
+    # "fix the list" pushed
     if data == FIX_THE_LIST:
         query.edit_message_text(text="Please, type the list of sources, that you prefer 📚\n" +
                                      "Each one in the new line without extra words.",
-                                reply_markup=get_fix_the_list_keyboard())
-    # back to start push
+                                reply_markup=get_backs_keyboard())
+    # "change the width" pushed
+    if data == CHANGE_THE_WIDTH:
+        query.edit_message_text(text="Please, type a new width. 🖊")
+    # "back to start" pushed
     if data == BACK_TO_START:
         redraw_to_start(query)
-        MODE = 0
-    # back to settings push
+    # "back to settings" pushed
     if data == BACK_TO_SETTINGS:
         redraw_to_settings(query)
-        MODE = 3
 
 
 # parsing call
