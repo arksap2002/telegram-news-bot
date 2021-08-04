@@ -53,6 +53,14 @@ MODE = 0
 SETTINGS_TOPIC_NAME = ""
 
 
+def represents_int(s):
+    try:
+        int(s)
+        return True
+    except ValueError:
+        return False
+
+
 # "start" move
 def do_start(update: Update, context: CallbackContext) -> None:
     global MODE
@@ -101,10 +109,18 @@ def do_input(update: Update, context: CallbackContext) -> None:
     text = update.message.text
     if MODE == 1:
         # "add" mode
-        TOPICS.append(Topic(text, []))
-        update.message.reply_text(
-            text=text + " successfully added! ✅\nAlso you can fill your sources list in the /settings mode 😜",
-            reply_markup=get_back_to_start_keyboard())
+        is_new = True
+        for topic_class in TOPICS:
+            if topic_class.name == text:
+                is_new = False
+        if is_new:
+            TOPICS.append(Topic(text, []))
+            update.message.reply_text(
+                text=text + " successfully added! ✅\nAlso you can fill your sources list in the /settings mode 😜",
+                reply_markup=get_back_to_start_keyboard())
+        else:
+            update.message.reply_text(text="You already have this topic 😂",
+                                      reply_markup=get_back_to_start_keyboard())
     elif MODE == 4:
         # "list settings" mode
         for i in range(0, len(TOPICS)):
@@ -114,8 +130,11 @@ def do_input(update: Update, context: CallbackContext) -> None:
         update.message.reply_text("List successfully fixed! ☑️", reply_markup=get_backs_keyboard())
     elif MODE == 5:
         # "new width" mode
-        WIDTH_OF_KEYBOARD = int(text)
-        update.message.reply_text("Width successfully changed! 👌️", reply_markup=get_backs_keyboard())
+        if represents_int(text):
+            WIDTH_OF_KEYBOARD = int(text)
+            update.message.reply_text("Width successfully changed! 👌️", reply_markup=get_backs_keyboard())
+        else:
+            update.message.reply_text(text="It is not a number 😂", reply_markup=get_back_to_start_keyboard())
     else:
         # input the topic
         update.message.reply_text(text=news_message(text), reply_markup=get_back_to_start_keyboard())
