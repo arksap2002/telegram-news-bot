@@ -68,7 +68,7 @@ def do_input(update: Update, context: CallbackContext) -> None:
     text = update.message.text
     user = update.message.from_user
     add_to_current_or_create_user(user.id)
-    if len(text) > 45:
+    if len(text) > MAX_TOPIC_LENGTH:
         update.message.reply_text(
             text="This is too long message 😔",
             reply_markup=get_back_to_start_keyboard())
@@ -96,8 +96,11 @@ def do_input(update: Update, context: CallbackContext) -> None:
     elif cur_users[user.id].mode == 5:
         # "new width" mode
         if represents_int(text):
-            cur_users[user.id].width_of_keyboard = int(text)
-            update.message.reply_text("Width successfully changed! 👌️", reply_markup=get_backs_keyboard())
+            if int(text) > 0:
+                cur_users[user.id].width_of_keyboard = int(text)
+                update.message.reply_text("Width successfully changed! 👌️", reply_markup=get_backs_keyboard())
+            else:
+                update.message.reply_text("Please, type the positive number 🔝", reply_markup=get_backs_keyboard())
         else:
             update.message.reply_text(text="It is not a number 😂", reply_markup=get_back_to_start_keyboard())
     else:

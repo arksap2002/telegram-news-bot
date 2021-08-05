@@ -38,6 +38,8 @@ CHOOSE_THE_TYPE_OF_SETTINGS = "Yo, welcome to the settings!\nSet me up for yours
 
 WIDTH_OF_KEYBOARD = 3
 
+MAX_TOPIC_LENGTH = 45
+
 # extra button names
 BACK_TO_START = "Back to the start menu ⬅️"
 BACK_TO_SETTINGS = "Back to the setting menu 🛠"
