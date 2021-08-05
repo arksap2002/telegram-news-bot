@@ -4,7 +4,7 @@ from flask import (
     request
 )
 from flask_login import login_user, logout_user, current_user, login_required
-from flask.models import User
+#from flask.models import User
 
 
 app = Flask(__name__)
@@ -53,7 +53,6 @@ def test():
 @app.route('/sing-up')
 def singup():
     return render_template('singup.html')
-
 
 
 if __name__ == '__main__':
