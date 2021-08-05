@@ -1,10 +1,23 @@
+import sys, os
+
+sys.path.insert(1, os.getcwd() + '/../')
+print(sys.path)
+
 from flask import (
     Flask, 
     render_template, 
-    request
+    request,
+    session,
 )
-from flask_login import login_user, logout_user, current_user, login_required
-#from flask.models import User
+
+from flask_login import (
+    login_user, 
+    logout_user, 
+    current_user, 
+    login_required
+)
+
+from loading import *
 
 
 app = Flask(__name__)
@@ -12,6 +25,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
+    print(type(session))
     tops = \
     [
         {
@@ -44,6 +58,9 @@ def login():
 
     email = request.form['email']
     pswd = request.form['password']
+
+
+
     return index()
 
 
