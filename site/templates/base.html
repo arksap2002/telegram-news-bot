@@ -1,6 +1,8 @@
 <!doctype html>
+<html lang="ru">
 <html>
     <head>
+		<meta charset="utf-8">
       {% if title %}
       <title>{{ title }}</title>
       {% else %}
@@ -10,6 +12,8 @@
     <body>
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
 
+
         {% block content %}{% endblock %}
+    <p class="mt-5 mb-3 text-muted">© 2017–2021</p>
     </body>
 </html>
