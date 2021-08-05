@@ -105,7 +105,8 @@ def do_input(update: Update, context: CallbackContext) -> None:
             update.message.reply_text(text="It is not a number 😂", reply_markup=get_back_to_start_keyboard())
     else:
         # input the topic
-        update.message.reply_text(text=news_message(text), reply_markup=get_back_to_start_keyboard())
+        cur_users[user.id].start_topic_name = text  # TODO
+        update.message.reply_text(text=news_with_rating_message(text), reply_markup=get_news_with_rating_keyboard())
     save_data()
 
 
@@ -179,6 +180,14 @@ def get_keyboard_settings_keyboard():
                                  [create_the_button(BACK_TO_SETTINGS)]])
 
 
+# "news" keyboard init
+def get_news_with_rating_keyboard():
+    rating_line = []
+    for grade in LIST_OF_RATING:
+        rating_line.append(create_the_button(grade))
+    return InlineKeyboardMarkup([rating_line, [create_the_button(BACK_TO_START)]])
+
+
 # redrawing the last message to the "start menu"
 def redraw_to_start(query):
     user = query.from_user
@@ -195,8 +204,9 @@ def redraw_to_settings(query):
     query.edit_message_text(text=CHOOSE_THE_TYPE_OF_SETTINGS, reply_markup=get_settings_keyboard())
 
 
-def news_message(topic):
-    return "Hey, nice choice! 👍\nHere are some " + topic + " news:\n" + find_news(topic)
+def news_with_rating_message(topic):
+    return "Hey, nice choice! 👍\nHere are some " + topic + " news:\n" + find_news(
+        topic) + "\n\n\nDo you like my compilation? 😳"
 
 
 # processing of all buttons
@@ -247,7 +257,9 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
                     break
             else:
                 # "news" mode
-                query.edit_message_text(text=news_message(topic_class.name), reply_markup=get_back_to_start_keyboard())
+                cur_users[user.id].start_topic_name = topic_class.name  # TODO
+                query.edit_message_text(text=news_with_rating_message(topic_class.name),
+                                        reply_markup=get_news_with_rating_keyboard())
     # "list settings" push
     if pushed_button_name == LIST_SETTINGS:
         cur_users[user.id].mode = 4
@@ -267,6 +279,13 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
     if pushed_button_name == CHANGE_THE_PLACEMENT:
         query.edit_message_text(text="Choose two topics, that you want to swap 🔄",
                                 reply_markup=get_topics_in_settings_keyboard(user))
+    # "rating" pushed
+    for grade in LIST_OF_RATING:
+        if pushed_button_name == grade.name:
+            print(grade.meaning)  # TODO for Sergay to consider that
+            query.edit_message_text(
+                text=find_news(cur_users[user.id].start_topic_name) + "\n\n\nThank you for your feedback! 🙏",
+                reply_markup=get_back_to_start_keyboard())
     # "back to start" pushed
     if pushed_button_name == BACK_TO_START:
         redraw_to_start(query)
