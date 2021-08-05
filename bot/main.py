@@ -109,7 +109,7 @@ def do_input(update: Update, context: CallbackContext) -> None:
     else:
         # input the topic
         cur_users[user.id].start_topic_name = text
-        update.message.reply_text(text=news_with_rating_message(text), reply_markup=get_news_with_rating_keyboard(), ,
+        update.message.reply_text(text=news_with_rating_message(text), reply_markup=get_news_with_rating_keyboard(),
                                   parse_mode=ParseMode.HTML)
     save_data()
 
@@ -208,7 +208,7 @@ def redraw_to_settings(query):
     query.edit_message_text(text=CHOOSE_THE_TYPE_OF_SETTINGS, reply_markup=get_settings_keyboard())
 
 
-def news_message(topic):
+def news_with_rating_message(topic):
     news = find_news(topic)
     if news == " ":
         return "Sorry, we didn't find anything 😥"
@@ -266,7 +266,7 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
                     # "news" mode
                     cur_users[user.id].start_topic_name = topic_class.name
                     query.edit_message_text(text=news_with_rating_message(topic_class.name),
-                                            reply_markup=get_news_with_rating_keyboard())
+                                            reply_markup=get_news_with_rating_keyboard(), parse_mode=ParseMode.HTML)
         # "list settings" push
         if pushed_button_name == LIST_SETTINGS:
             cur_users[user.id].mode = 4
@@ -294,7 +294,7 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
                 print(grade.meaning)  # TODO for Sergay to consider that
                 query.edit_message_text(
                     text=find_news(cur_users[user.id].start_topic_name) + "\n\n\nThank you for your feedback! 🙏",
-                    reply_markup=get_back_to_start_keyboard())
+                    reply_markup=get_back_to_start_keyboard(), parse_mode=ParseMode.HTML)
         # "back to start" pushed
         if pushed_button_name == BACK_TO_START:
             redraw_to_start(query)
