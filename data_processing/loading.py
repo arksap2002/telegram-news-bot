@@ -11,6 +11,7 @@ class User:
         self.width_of_keyboard = WIDTH_OF_KEYBOARD
         self.mode = MODE
         self.setting_topic_name = SETTINGS_TOPIC_NAME
+        self.start_topic_name = START_TOPIC_NAME
         # self.neural_network
 
 

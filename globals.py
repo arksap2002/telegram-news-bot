@@ -14,6 +14,13 @@ class Topic:
         self.sites = sites
 
 
+# grade class (for ratings buttons)
+class Grade:
+    def __init__(self, name, meaning):
+        self.name = name
+        self.meaning = meaning
+
+
 # array of buttons
 TOPICS = [
     Topic("Sports", ["https://www.sports.ru", "https://www.skysports.com", "https://www.bbc.com/sport"]),
@@ -49,6 +56,8 @@ KEYBOARD_SETTINGS = "Keyboard settings ⌨️"
 CHANGE_THE_WIDTH = "Width of keyboard 📏"
 CHANGE_THE_PLACEMENT = "Placement of buttons 🔀"
 
+LIST_OF_RATING = [Grade("👍", "Good"), Grade("➖", "Nothing"), Grade("👎", "Bad")]
+
 # mode flag
 # (0 - "start" mode, 1 - "add" mode, 2 - "delete mode", 3 - "settings" mode)
 #         (4 - "list settings" mode, 5 - "keyboard settings" mode)
@@ -56,3 +65,6 @@ MODE = 0
 
 # what topics are you working to ("list settings" mode) and first pushed in the "swap" mode
 SETTINGS_TOPIC_NAME = ""
+
+# what topics are you working to ("start" mode)
+START_TOPIC_NAME = ""
