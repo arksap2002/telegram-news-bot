@@ -25,28 +25,28 @@ def load_all_data():
 def add_to_current_or_create_user(id_: int):
     if id_ not in all_users.keys():
         all_users[id_] = User()
-    if id_ not in current_users.keys():
-        current_users[id_] = copy.deepcopy(all_users[id_])
+    if id_ not in cur_users.keys():
+        cur_users[id_] = copy.deepcopy(all_users[id_])
 
 
 def add_theme(id_: int, theme: Topic):
-    current_users[id_].topics = np.append(current_users[id_].topics, [theme])
+    cur_users[id_].topics = np.append(cur_users[id_].topics, [theme])
 
 
 def change_width(id_: int, width: int):
-    current_users[id_].width_of_keyboard = width
+    cur_users[id_].width_of_keyboard = width
 
 
 def remove_theme(id_: int, theme: Topic):
-    for i in range(len(current_users[id_].topics)):
-        if current_users[id_].topics[i].name == theme.name:
-            current_users[id_].topics = np.delete(current_users[id_].topics, i)
+    for i in range(len(cur_users[id_].topics)):
+        if cur_users[id_].topics[i].name == theme.name:
+            cur_users[id_].topics = np.delete(cur_users[id_].topics, i)
             break
 
 
 def remove_user_from_current(id_: int):
-    all_users[id_] = copy.deepcopy(current_users[id_])
-    del current_users[id_]
+    all_users[id_] = copy.deepcopy(cur_users[id_])
+    del cur_users[id_]
 
 
 def save_data():
@@ -57,8 +57,8 @@ def save_data():
     else:
         print("saving")
         curr_time = time.time()
-    for id_ in current_users.keys():
-        all_users[id_] = copy.deepcopy(current_users[id_])
+    for id_ in cur_users.keys():
+        all_users[id_] = copy.deepcopy(cur_users[id_])
     with open(data_filename, 'wb') as f:
         pickle.dump(all_users, f)
         f.close()
