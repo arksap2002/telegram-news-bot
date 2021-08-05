@@ -275,6 +275,7 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
     # "change the width" pushed
     if pushed_button_name == CHANGE_THE_WIDTH:
         query.edit_message_text(text="Please, type a new width 🖊")
+
     # "change the placement" pushed
     if pushed_button_name == CHANGE_THE_PLACEMENT:
         query.edit_message_text(text="Choose two topics, that you want to swap 🔄",
