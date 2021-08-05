@@ -29,6 +29,12 @@ class User:
     def is_anonymous(self):
         return False
 
+def load_topics():
+    global ALL_TOPICS
+    with open(topics_filename) as f:
+        ALL_TOPICS = [[x] for x in f.read().split('\n')]
+    print(ALL_TOPICS)
+    ENCODER.fit(ALL_TOPICS)
 
 def load_all_data():
     with open(data_filename, 'rb') as f:
