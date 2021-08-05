@@ -106,7 +106,7 @@ def do_input(update: Update, context: CallbackContext) -> None:
             update.message.reply_text(text="It is not a number 😂", reply_markup=get_back_to_start_keyboard())
     else:
         # input the topic
-        cur_users[user.id].start_topic_name = text  # TODO
+        cur_users[user.id].start_topic_name = text
         update.message.reply_text(text=news_with_rating_message(text), reply_markup=get_news_with_rating_keyboard())
     save_data()
 
@@ -259,7 +259,7 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
                         break
                 else:
                     # "news" mode
-                    cur_users[user.id].start_topic_name = topic_class.name  # TODO
+                    cur_users[user.id].start_topic_name = topic_class.name
                     query.edit_message_text(text=news_with_rating_message(topic_class.name),
                                             reply_markup=get_news_with_rating_keyboard())
         # "list settings" push
