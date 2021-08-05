@@ -37,6 +37,8 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'GET':
+        email = request.args.get('email')
+        pswd = request.args.get('password')
         return render_template('login.html')
 
 
