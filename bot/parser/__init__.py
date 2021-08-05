@@ -8,19 +8,15 @@ def get_topics(theme):
     link = site + "/search?q=" + theme
     try:
         response = requests.get(link).text
-        print(link)
         soup = BeautifulSoup(response, "lxml")
 
         blocks = soup.find_all("div", attrs={"class": "postArticle-content"})
         if len(blocks) == 0:
             return " "
-        print(blocks)
-        print(blocks[1].text, '\n')
         res = []
         for i in range(0, min(3, len(blocks))):
             res.append(blocks[i].find("a"))
 
-        print(res)
         return res
     except:
         return False
