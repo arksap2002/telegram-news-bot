@@ -1,7 +1,8 @@
 # imports
-from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Bot, Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackQueryHandler, CallbackContext
 from bot.config import TG_TOKEN
+from bot.parser import get_topics, get_href
 
 from globals import *
 from data_processing.loading import *
@@ -105,7 +106,8 @@ def do_input(update: Update, context: CallbackContext) -> None:
             update.message.reply_text(text="It is not a number 😂", reply_markup=get_back_to_start_keyboard())
     else:
         # input the topic
-        update.message.reply_text(text=news_message(text), reply_markup=get_back_to_start_keyboard())
+        update.message.reply_text(text=news_message(text), reply_markup=get_back_to_start_keyboard(),
+                                  parse_mode=ParseMode.HTML)
     save_data()
 
 
@@ -196,7 +198,10 @@ def redraw_to_settings(query):
 
 
 def news_message(topic):
-    return "Hey, nice choice! 👍\nHere are some " + topic + " news:\n" + find_news(topic)
+    news = find_news(topic)
+    if news == " ":
+        return "Sorry, we didn't find anything 😥"
+    return "Hey, nice choice! 👍\nHere are some " + topic + " news:\n" + news
 
 
 # processing of all buttons
@@ -247,7 +252,8 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
                     break
             else:
                 # "news" mode
-                query.edit_message_text(text=news_message(topic_class.name), reply_markup=get_back_to_start_keyboard())
+                query.edit_message_text(text=news_message(topic_class.name), reply_markup=get_back_to_start_keyboard(),
+                                        parse_mode=ParseMode.HTML)
     # "list settings" push
     if pushed_button_name == LIST_SETTINGS:
         cur_users[user.id].mode = 4
@@ -278,8 +284,12 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
 
 # parsing call
 def find_news(topic):
-    # TODO Slava's job here in the other file!!! You have to find the news about the current topic and return text
-    return "Slava's job!"
+    tops = get_topics(topic)
+    if tops == " ":
+        return " "
+    result = "Choose one of this topics:\n1)" + \
+             get_href(tops[0]) + "\n2)" + get_href(tops[1]) + "\n3)" + get_href(tops[2])
+    return result
 
 
 def main() -> None:
