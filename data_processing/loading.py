@@ -3,16 +3,32 @@ import pickle
 import numpy as np
 import time
 from globals import *
+from random import randint
+from flask_login import UserMixin
 
 
-class User:
-    def __init__(self):
+class User(UserMixin):
+    def __init__(self, email='default@mail', password=None, active=True, id=None):
         self.topics = np.array(TOPICS)
         self.width_of_keyboard = WIDTH_OF_KEYBOARD
         self.mode = MODE
         self.setting_topic_name = SETTINGS_TOPIC_NAME
-        self.start_topic_name = START_TOPIC_NAME
+
+        self.email = email
+        self.password = randint(1, 1000)
+        self.active = active
         # self.neural_network
+    def is_active(self):
+        return True
+
+    def get_id(self):
+        return self.email
+
+    def is_authenticated(self):
+        return True
+
+    def is_anonymous(self):
+        return False
 
 
 def load_all_data():
