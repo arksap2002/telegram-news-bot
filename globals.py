@@ -61,14 +61,16 @@ ENCODER = OneHotEncoder(sparse=False)
 
 
 class Article:
-    def __init__(self, topic, likes, comments, minutes_to_read, link):
-        self.topic = topic
+    def __init__(self, tags, likes, comments, minutes_to_read, link):
+        self.tags = tags
         self.likes = likes
         self.comments = comments
         self.read_time = minutes_to_read
         self.link = link
+
+
 def load_topics():
     global ALL_TOPICS
     with open(topics_filename) as f:
-        ALL_TOPICS +=[[x] for x in f.read().split('\n')]
+        ALL_TOPICS += [[x] for x in f.read().split('\n')]
     ENCODER.fit(ALL_TOPICS)

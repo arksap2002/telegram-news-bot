@@ -2,15 +2,15 @@ import copy
 import pickle
 import numpy as np
 from globals import *
+from data_processing.neural import get_default_neural
 from data_processing.neural import Neural
-
 class User:
     def __init__(self):
         self.topics = np.array(TOPICS)
         self.width_of_keyboard = WIDTH_OF_KEYBOARD
         self.mode = MODE
         self.setting_topic_name = SETTINGS_TOPIC_NAME
-        self.personal_preferences = Neural()
+        self.personal_preferences = get_default_neural()
 
 
 def load_all_data():
