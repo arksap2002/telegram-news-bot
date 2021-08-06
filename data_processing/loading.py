@@ -1,9 +1,8 @@
 import copy
 import pickle
 import numpy as np
-import time
 from globals import *
-
+from data_processing.neural import Neural
 
 class User:
     def __init__(self):
@@ -11,14 +10,8 @@ class User:
         self.width_of_keyboard = WIDTH_OF_KEYBOARD
         self.mode = MODE
         self.setting_topic_name = SETTINGS_TOPIC_NAME
-        # self.neural_network
+        self.personal_preferences = Neural()
 
-def load_topics():
-    global ALL_TOPICS
-    with open(topics_filename) as f:
-        ALL_TOPICS = [[x] for x in f.read().split('\n')]
-    print(ALL_TOPICS)
-    ENCODER.fit(ALL_TOPICS)
 
 def load_all_data():
     with open(data_filename, 'rb') as f:

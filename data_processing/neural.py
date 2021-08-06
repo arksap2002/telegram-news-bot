@@ -1,14 +1,16 @@
+import pickle
 import time
 
 from sklearn.linear_model import SGDRegressor
-from globals import (Article, ENCODER)
-from loading import load_topics
+from globals import (Article, ENCODER, load_topics, ALL_TOPICS)
 import numpy as np
 import random
 
 class Neural:
     def __init__(self):
-        self.regressor = SGDRegressor(learning_rate='adaptive', eta0=0.2)
+        self.regressor = SGDRegressor(learning_rate='adaptive', eta0=0.05)
+        with open('../default_neural.pkl', 'rb') as f:
+            self.regressor = pickle.load(f)
 
     def partial_fit(self, article_info: Article, grade: int):
         sample = ENCODER.transform([[article_info.topic]])
@@ -25,19 +27,8 @@ class Neural:
 def train():
     load_topics()
     model = Neural()
-    for i in range(10):
-        model.partial_fit(Article("Self", random.random()*1000, random.random()*100, random.random()*10+3), 10)
-        model.partial_fit(Article("TV", random.random()*1000, random.random()*100, random.random()*10+3), 1)
-
-        print("Self", model.predict(Article("Self", 100, 1, 6)))
-        print("TV", model.predict(Article("TV", 100, 1, 6)))
-        print("Race", model.predict(Article("Race", 100, 1, 6)))
-        time.sleep(0.1)
-    for i in range(10):
-        model.partial_fit(Article("Music", random.random()*1000, random.random()*100, random.random()*10+3), 10)
-        model.partial_fit(Article("Race", random.random()*1000, random.random()*100, random.random()*10+3), 1)
-
-        print("Self", model.predict(Article("Self", 100, 1, 6)))
-        print("Music", model.predict(Article("Music", 100, 1, 6)))
-        print("Race", model.predict(Article("Race", 100, 1, 6)))
-        time.sleep(0.1)
+    for i in range(1000):
+        sample = Article(ALL_TOPICS[random.randint(0, len(ALL_TOPICS)-1)][0], random.randint(0, 10000), random.randint(0, 200), random.randint(2, 10))
+        model.partial_fit(sample, sample.likes/2000 + sample.comments/100)
+    with open('default_neural.pkl', 'wb') as f:
+        pickle.dump(model, f)
