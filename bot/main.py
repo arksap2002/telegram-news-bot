@@ -20,6 +20,7 @@ def represents_int(s):
 def do_start(update: Update, context: CallbackContext) -> None:
     user = update.message.from_user
     add_to_current_or_create_user(user.id)
+    print(update.message.from_user.id, "is in \"start\" mode")
     cur_users[user.id].mode = 0
     update.message.reply_text(text=CHOOSE_THE_TOPIC, reply_markup=get_start_keyboard(update.message.from_user))
     save_data()
@@ -28,6 +29,7 @@ def do_start(update: Update, context: CallbackContext) -> None:
 # "add" move
 def do_add(update: Update, context: CallbackContext) -> None:
     add_to_current_or_create_user(update.message.from_user.id)
+    print(update.message.from_user.id, "is in \"add\" mode")
     cur_users[update.message.from_user.id].mode = 1
     update.message.reply_text(text="Type a new topic ✏️", reply_markup=get_back_to_start_keyboard())
     save_data()
@@ -36,6 +38,7 @@ def do_add(update: Update, context: CallbackContext) -> None:
 # "delete" move
 def do_delete(update: Update, context: CallbackContext) -> None:
     add_to_current_or_create_user(update.message.from_user.id)
+    print(update.message.from_user.id, "is in \"delete\" mode")
     cur_users[update.message.from_user.id].mode = 2
     update.message.reply_text(text="Which topic do you want to delete? 🖍",
                               reply_markup=get_delete_keyboard(update.message.from_user))
@@ -44,6 +47,7 @@ def do_delete(update: Update, context: CallbackContext) -> None:
 
 # "help" move
 def do_help(update: Update, context: CallbackContext) -> None:
+    print(update.message.from_user.id, "is in \"help\" mode")
     update.message.reply_text(
         text="You can control me by sending these commands: 🤟\n" +
              "/start - go back to the topics menu 🔥\n" +
@@ -59,6 +63,7 @@ def do_help(update: Update, context: CallbackContext) -> None:
 # "settings" move
 def do_settings(update: Update, context: CallbackContext) -> None:
     add_to_current_or_create_user(update.message.from_user.id)
+    print(update.message.from_user.id, "is in \"settings\" mode")
     cur_users[update.message.from_user.id].mode = 3
     update.message.reply_text(text=CHOOSE_THE_TYPE_OF_SETTINGS, reply_markup=get_settings_keyboard())
     save_data()
@@ -69,6 +74,7 @@ def do_input(update: Update, context: CallbackContext) -> None:
     text = update.message.text
     user = update.message.from_user
     add_to_current_or_create_user(user.id)
+    print(user.id, "typed", text)
     if len(text) > MAX_TOPIC_LENGTH:
         update.message.reply_text(
             text="This is too long message 😔",
@@ -218,6 +224,7 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
         pushed_button_name = query.data
         user = query.from_user
         add_to_current_or_create_user(user.id)
+        print(user.id, "pushed", pushed_button_name)
         # "topic" push
         for topic_class in cur_users[user.id].topics:
             if pushed_button_name == topic_class.name:
