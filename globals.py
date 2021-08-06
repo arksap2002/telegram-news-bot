@@ -61,12 +61,12 @@ ENCODER = OneHotEncoder(sparse=False)
 
 
 class Article:
-    def __init__(self, topic, likes, comments, minutes_to_read):
+    def __init__(self, topic, likes, comments, minutes_to_read, link):
         self.topic = topic
         self.likes = likes
         self.comments = comments
         self.read_time = minutes_to_read
-
+        self.link = link
 def load_topics():
     global ALL_TOPICS
     with open(topics_filename) as f:
