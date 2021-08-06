@@ -16,6 +16,13 @@ class Topic:
         self.sites = sites
 
 
+# grade class (for ratings buttons)
+class Grade:
+    def __init__(self, name, meaning):
+        self.name = name
+        self.meaning = meaning
+
+
 # array of buttons
 TOPICS = [
     Topic("Sports", ["https://www.sports.ru", "https://www.skysports.com", "https://www.bbc.com/sport"]),
@@ -40,6 +47,8 @@ CHOOSE_THE_TYPE_OF_SETTINGS = "Yo, welcome to the settings!\nSet me up for yours
 
 WIDTH_OF_KEYBOARD = 3
 
+MAX_TOPIC_LENGTH = 45
+
 # extra button names
 BACK_TO_START = "Back to the start menu ⬅️"
 BACK_TO_SETTINGS = "Back to the setting menu 🛠"
@@ -48,6 +57,8 @@ LIST_SETTINGS = "Sources list settings 🗂"
 KEYBOARD_SETTINGS = "Keyboard settings ⌨️"
 CHANGE_THE_WIDTH = "Width of keyboard 📏"
 CHANGE_THE_PLACEMENT = "Placement of buttons 🔀"
+
+LIST_OF_RATING = [Grade("👍", "Good"), Grade("➖", "Nothing"), Grade("👎", "Bad")]
 
 # mode flag
 # (0 - "start" mode, 1 - "add" mode, 2 - "delete mode", 3 - "settings" mode)
@@ -74,3 +85,6 @@ def load_topics():
     with open(topics_filename) as f:
         ALL_TOPICS += [[x] for x in f.read().split('\n')]
     ENCODER.fit(ALL_TOPICS)
+
+# what topics are you working to ("start" mode)
+START_TOPIC_NAME = ""

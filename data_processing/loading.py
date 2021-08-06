@@ -1,6 +1,7 @@
 import copy
 import pickle
 import numpy as np
+import time
 from globals import *
 from data_processing.neural import get_default_neural
 from data_processing.neural import Neural
@@ -11,6 +12,7 @@ class User:
         self.mode = MODE
         self.setting_topic_name = SETTINGS_TOPIC_NAME
         self.personal_preferences = get_default_neural()
+        self.start_topic_name = START_TOPIC_NAME
 
 
 def load_all_data():
