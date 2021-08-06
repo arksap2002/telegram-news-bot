@@ -67,3 +67,8 @@ class Article:
         self.comments = comments
         self.read_time = minutes_to_read
 
+def load_topics():
+    global ALL_TOPICS
+    with open(topics_filename) as f:
+        ALL_TOPICS +=[[x] for x in f.read().split('\n')]
+    ENCODER.fit(ALL_TOPICS)
