@@ -22,7 +22,7 @@ class Neural:
         try:
             sample = ENCODER.transform([article_info.tags])
             sample = np.append(sample, [1.0 / (article_info.likes + 1), 1.0 / (article_info.comments + 1),
-                                    1.0 / (article_info.read_time + 1)])
+                                        1.0 / (article_info.read_time + 1)])
         except:
             return 5
         return self.regressor.predict([sample])
@@ -33,10 +33,13 @@ class Neural:
             grades.append((self.predict(i), i))
         return [x[1] for x in sorted(grades)]
 
+
 def get_default_neural():
     with open('../data_processing/default_neural.pkl', 'rb') as f:
         neural = pickle.load(f)
     return neural
+
+
 def train():
     load_topics()
     model = get_default_neural()

@@ -86,5 +86,6 @@ def load_topics():
         ALL_TOPICS += [[x] for x in f.read().split('\n')]
     ENCODER.fit(ALL_TOPICS)
 
+
 # what topics are you working to ("start" mode)
 START_TOPIC_NAME = ""

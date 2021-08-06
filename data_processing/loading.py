@@ -5,6 +5,8 @@ import time
 from globals import *
 from data_processing.neural import get_default_neural
 from data_processing.neural import Neural
+
+
 class User:
     def __init__(self):
         self.topics = np.array(TOPICS)
