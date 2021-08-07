@@ -113,7 +113,7 @@ def do_input(update: Update, context: CallbackContext) -> None:
     else:
         # input the topic
         cur_users[user.id].start_topic_name = text
-        update.message.reply_text(text=news_with_rating_message(text), reply_markup=get_news_with_rating_keyboard())
+        update.message.reply_text(text=news_with_rating_message(text), reply_markup=get_news_with_rating_keyboard(user))
     save_data()
 
 
@@ -188,11 +188,19 @@ def get_keyboard_settings_keyboard():
 
 
 # "news" keyboard init
-def get_news_with_rating_keyboard():
-    rating_line = []
-    for grade in LIST_OF_RATING:
-        rating_line.append(create_the_button(grade.name))
-    return InlineKeyboardMarkup([rating_line, [create_the_button(BACK_TO_START)]])
+def get_news_with_rating_keyboard(user):
+    keyboard = []
+    for i in range(0, len(cur_users[user.id].is_feedback_pushed)):
+        if cur_users[user.id].is_feedback_pushed[i]:
+            continue
+        rating_line = []
+        for grade in LIST_OF_RATING:
+            # InlineKeyboardButton - create_the_button
+            # name button = #index + '_' + #grade
+            rating_line.append(InlineKeyboardButton(grade, callback_data=str(i) + '_' + grade))
+        keyboard.append(rating_line)
+    keyboard.append([create_the_button(BACK_TO_START)])
+    return InlineKeyboardMarkup(keyboard)
 
 
 # redrawing the last message to the "start menu"
@@ -268,7 +276,7 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
                     # "news" mode
                     cur_users[user.id].start_topic_name = topic_class.name
                     query.edit_message_text(text=news_with_rating_message(topic_class.name),
-                                            reply_markup=get_news_with_rating_keyboard())
+                                            reply_markup=get_news_with_rating_keyboard(user))
         # "list settings" push
         if pushed_button_name == LIST_SETTINGS:
             cur_users[user.id].mode = 4
@@ -285,18 +293,29 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
         # "change the width" pushed
         if pushed_button_name == CHANGE_THE_WIDTH:
             query.edit_message_text(text="Please, type a new width 🖊")
-
         # "change the placement" pushed
         if pushed_button_name == CHANGE_THE_PLACEMENT:
             query.edit_message_text(text="Choose two topics, that you want to swap 🔄",
                                     reply_markup=get_topics_in_settings_keyboard(user))
         # "rating" pushed
-        for grade in LIST_OF_RATING:
-            if pushed_button_name == grade.name:
-                print(grade.meaning)  # TODO for Sergay to consider that
-                query.edit_message_text(
-                    text=find_news(cur_users[user.id].start_topic_name) + "\n\n\nThank you for your feedback! 🙏",
-                    reply_markup=get_back_to_start_keyboard())
+        for i in range(0, len(cur_users[user.id].is_feedback_pushed)):
+            for grade in LIST_OF_RATING:
+                if pushed_button_name == str(i) + '_' + grade:
+                    cur_users[user.id].is_feedback_pushed[i] = True
+                    print(i, grade)  # TODO for Sergay to consider that
+                    # is all feedbacks done checking
+                    is_all_feedbacks_done = True
+                    for flag in cur_users[user.id].is_feedback_pushed:
+                        is_all_feedbacks_done = is_all_feedbacks_done and flag
+                    if is_all_feedbacks_done:
+                        # feedbacks finished
+                        query.edit_message_text(text=find_news(cur_users[user.id].start_topic_name) +
+                                                     "\n\n\nThank you for your feedback! 🙏",
+                                                reply_markup=get_back_to_start_keyboard())
+                    else:
+                        # feedbacks have not finished yet
+                        query.edit_message_text(text=news_with_rating_message(cur_users[user.id].start_topic_name),
+                                                reply_markup=get_news_with_rating_keyboard(user))
         # "back to start" pushed
         if pushed_button_name == BACK_TO_START:
             redraw_to_start(query)

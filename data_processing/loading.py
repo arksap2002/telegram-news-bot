@@ -15,6 +15,8 @@ class User:
         self.setting_topic_name = SETTINGS_TOPIC_NAME
         self.personal_preferences = get_default_neural()
         self.start_topic_name = START_TOPIC_NAME
+        self.number_of_articles = 3  # TODO Slava, use it! It can be len(find_news(topic).split('\n'))
+        self.is_feedback_pushed = [False] * self.number_of_articles
 
 
 def load_all_data():
