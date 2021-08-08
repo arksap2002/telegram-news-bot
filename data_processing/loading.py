@@ -16,6 +16,7 @@ class User:
         self.email = email
         self.password = password
         self.active = active
+        self.start_topic_name = START_TOPIC_NAME
         # self.neural_network
     def is_active(self):
         return True
