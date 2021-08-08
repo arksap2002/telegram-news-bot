@@ -4,18 +4,17 @@ import numpy as np
 import time
 from globals import *
 from random import randint
-from flask_login import UserMixin
 
 
-class User(UserMixin):
-    def __init__(self, email='default@mail', password=None, active=True, id=None):
+class User:
+    def __init__(self, email=None, password=None, active=True, id_=None):
         self.topics = np.array(TOPICS)
         self.width_of_keyboard = WIDTH_OF_KEYBOARD
         self.mode = MODE
         self.setting_topic_name = SETTINGS_TOPIC_NAME
 
         self.email = email
-        self.password = randint(1, 1000)
+        self.password = password
         self.active = active
         # self.neural_network
     def is_active(self):
@@ -39,9 +38,9 @@ def load_all_data():
         f.close()
 
 
-def add_to_current_or_create_user(id_: int):
+def add_to_current_or_create_user(id_: int, email=None, password=None, active=True):
     if id_ not in all_users.keys():
-        all_users[id_] = User()
+        all_users[id_] = User(email, password, active, id_)
     if id_ not in cur_users.keys():
         cur_users[id_] = copy.deepcopy(all_users[id_])
 
