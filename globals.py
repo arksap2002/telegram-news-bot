@@ -1,11 +1,9 @@
 import time
-from sklearn.preprocessing import OneHotEncoder
 
 all_users = dict()
 cur_users = dict()
 save_frequency = 10
 data_filename = "user_data.pkl"
-topics_filename = "all_topics.txt"
 curr_time = time.time()
 
 
@@ -67,24 +65,16 @@ MODE = 0
 
 # what topics are you working to ("list settings" mode) and first pushed in the "swap" mode
 SETTINGS_TOPIC_NAME = ""
-ALL_TOPICS = []
-ENCODER = OneHotEncoder(sparse=False)
-
 
 class Article:
-    def __init__(self, tags, likes, comments, minutes_to_read, link):
-        self.tags = tags
+    def __init__(self, likes, comments, size, image_count, link):
         self.likes = likes
         self.comments = comments
-        self.read_time = minutes_to_read
+        self.size = size
+        self.image_count = image_count
         self.link = link
 
 
-def load_topics():
-    global ALL_TOPICS
-    with open(topics_filename) as f:
-        ALL_TOPICS += [[x] for x in f.read().split('\n')]
-    ENCODER.fit(ALL_TOPICS)
 
 
 # what topics are you working to ("start" mode)
