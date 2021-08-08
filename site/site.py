@@ -25,9 +25,14 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'
 
 @login_manager.user_loader
-def user_loader(user_id):
-    return cur_users[user_id] if user_id in all_users.keys() else None
-    #return User.get(user_id)
+def user_loade(user_id):
+    print(user_id)
+    if user_id in cur_users.keys():
+        print(current_user.is_authenticated)
+        return cur_users[user_id]
+    else:
+        print(None)
+        return None
 
 
 @app.route('/')
@@ -65,30 +70,24 @@ def login():
     email = request.form['email']
     pswd = request.form['password']
 
-    add_to_current_or_create_user(email)
+    add_to_current_or_create_user(email, email, pswd)
     user = cur_users[email]
 
     if login_user(user, remember=True):
         print("Logged in!")
-        #return redirect('/notes/create')
     else:
         print("unable to log you in")
     return index()
 
 
-@app.route('/test')
-def test():
-    print(type(current_user))
-    print(current_user)
-    try:
-        print(current_user.is_authenticated())
-    except:
-        print("func faill")
-    try:
-        print(current_user.is_authenticated)
-    except:
-        print("peremennaya faill")
-    return render_template('test.html', user=current_user if current_user.is_authenticated else None)
+@app.route('/is-logged')
+@login_required
+def test_loggedin():
+    return render_template('test_loggedin.html', user=current_user if current_user.is_authenticated else None)
+
+#@app.route('/test')
+#def test():
+#    return render_template('test.html', user=current_user if current_user.is_authenticated else None)
 
 
 @app.route('/sing-up')
