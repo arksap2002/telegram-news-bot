@@ -9,6 +9,15 @@ from bot.parser import get_topics, get_href
 from globals import *
 from data_processing.loading import *
 
+def waiting(func):
+    def inner(update, context):
+        print("waiting")
+        query = update.callback_query
+        query.answer()
+        query.edit_message_text(text="loading")
+        func(update, context)
+    return inner
+
 
 def represents_int(s):
     try:
@@ -216,6 +225,7 @@ def news_with_rating_message(topic):
 
 
 # processing of all buttons
+@waiting
 def keyboard_processing(update: Update, context: CallbackContext) -> None:
     try:
         query = update.callback_query
