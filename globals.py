@@ -4,6 +4,7 @@ all_users = dict()
 cur_users = dict()
 save_frequency = 10
 data_filename = "user_data.pkl"
+global_model_filename = "global_model.pkl"
 curr_time = time.time()
 
 
@@ -73,7 +74,6 @@ class Article:
         self.size = size
         self.image_count = image_count
         self.link = link
-
 
 
 

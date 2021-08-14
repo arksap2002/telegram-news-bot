@@ -59,6 +59,7 @@ def save_data():
     else:
         print("saving")
         curr_time = time.time()
+
     for id_ in cur_users.keys():
         all_users[id_] = copy.deepcopy(cur_users[id_])
     with open(data_filename, 'wb') as f:
