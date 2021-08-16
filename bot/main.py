@@ -233,6 +233,7 @@ def news_with_rating_message(topic):
 # processing of all buttons
 @waiting
 def keyboard_processing(update: Update, context: CallbackContext) -> None:
+    global tops
     try:
         query = update.callback_query
         query.answer()
@@ -310,12 +311,11 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
             if pushed_button_name == grade.name:
                 print(grade.meaning)  # TODO for Sergay to consider that
                 if grade.meaning == "Good":
-                    pass
-                    #func_serg(+)
-                elif grade.meaning == "none":
-                    pass
+                    cur_users[user.id].personal_preferences.partial_fit(tops[0], 10)
+                elif grade.meaning == "Nothing":
+                    cur_users[user.id].personal_preferences.partial_fit(tops[0], 5)
                 else:
-                    pass
+                    cur_users[user.id].personal_preferences.partial_fit(tops[0], 0)
                 query.edit_message_text(
                     text=find_news(cur_users[user.id].start_topic_name) + "\n\n\nThank you for your feedback! 🙏",
                     reply_markup=get_back_to_start_keyboard(), parse_mode=ParseMode.HTML)
@@ -330,8 +330,11 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
         None
 
 
+tops = []
+
 # parsing call
 def find_news(topic):
+    global tops
     tops = get_topics(topic)
     if tops == []:
         return " "
