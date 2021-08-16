@@ -309,7 +309,7 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
 # parsing call
 def find_news(topic):
     tops = get_topics(topic)
-    if tops == " ":
+    if tops == []:
         return " "
     result = "Choose one of this topics:\n1)" + \
              get_href(tops[0]) + "\n2)" + get_href(tops[1]) + "\n3)" + get_href(tops[2])
