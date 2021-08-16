@@ -302,6 +302,13 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
         for grade in LIST_OF_RATING:
             if pushed_button_name == grade.name:
                 print(grade.meaning)  # TODO for Sergay to consider that
+                if grade.meaning == "Good":
+                    pass
+                    #func_serg(+)
+                elif grade.meaning == "none":
+                    pass
+                else:
+                    pass
                 query.edit_message_text(
                     text=find_news(cur_users[user.id].start_topic_name) + "\n\n\nThank you for your feedback! 🙏",
                     reply_markup=get_back_to_start_keyboard(), parse_mode=ParseMode.HTML)
