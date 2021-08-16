@@ -81,7 +81,6 @@ def login():
 
 
 @app.route('/is-logged')
-@login_required
 def test_loggedin():
     return render_template('test_loggedin.html', user=current_user if current_user.is_authenticated else None)
 
