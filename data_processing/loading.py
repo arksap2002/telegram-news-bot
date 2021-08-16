@@ -4,6 +4,7 @@ import numpy as np
 import time
 from globals import *
 from random import randint
+from data_processing.neural import Neural
 
 
 class User:
@@ -16,6 +17,8 @@ class User:
         self.email = email
         self.password = password
         self.active = active
+        self.start_topic_name = START_TOPIC_NAME
+        self.personal_preferences = Neural()
         self.start_topic_name = START_TOPIC_NAME
         # self.neural_network
     def is_active(self):
@@ -74,6 +77,7 @@ def save_data():
     else:
         print("saving")
         curr_time = time.time()
+
     for id_ in cur_users.keys():
         all_users[id_] = copy.deepcopy(cur_users[id_])
     with open(data_filename, 'wb') as f:

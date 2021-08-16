@@ -4,6 +4,7 @@ all_users = dict()
 cur_users = dict()
 save_frequency = 10
 data_filename = "user_data.pkl"
+global_model_filename = "global_model.pkl"
 curr_time = time.time()
 
 
@@ -65,6 +66,16 @@ MODE = 0
 
 # what topics are you working to ("list settings" mode) and first pushed in the "swap" mode
 SETTINGS_TOPIC_NAME = ""
+
+class Article:
+    def __init__(self, likes, comments, size, image_count, link):
+        self.likes = likes
+        self.comments = comments
+        self.size = size
+        self.image_count = image_count
+        self.link = link
+
+
 
 # what topics are you working to ("start" mode)
 START_TOPIC_NAME = ""
