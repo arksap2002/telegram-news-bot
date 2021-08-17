@@ -336,7 +336,7 @@ tops = []
 def find_news(topic):
     global tops
     tops = get_topics(topic)
-    if tops == " ":
+    if tops == []:
         return " "
     result = "Choose one of this topics:\n1)" + \
              get_href(tops[0]) + "\n2)" + get_href(tops[1]) + "\n3)" + get_href(tops[2])
