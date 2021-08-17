@@ -9,9 +9,7 @@ site_habr = "https://habr.com/en"
 
 
 def dow_all(links, results):
-    results = Parallel(n_jobs=9)(  # , verbose=verbosity_level, backend="threading")(
-        map(delayed(download), links))
-    print(len(results))
+    results.append(Parallel(n_jobs=9)(map(delayed(download), links)))
 
 
 def download(link):
@@ -30,16 +28,15 @@ def get_medium(res, theme):
         "class": "postArticle postArticle--short js-postArticle js-trackPostPresentation"})
     timer = time.time()
     links_author = []
-    print(len(blocks))
     for i in range(0, len(blocks)):
         links_author.append(get_link(blocks[i].find("a", attrs={
             "class": "link u-baseColor--link avatar"})))
     results = []
     dow_all(links_author, results)
-    print(len(results))
+    print(len(results[0]))
+
     for i in range(0, len(blocks)):
         newlist = []
-        # print(blocks[i].find("div", attrs={"class": "postArticle-content"}).find("a").text)
         zalupa = blocks[i].find("button", attrs={
             "class": "button button--chromeless u-baseColor--buttonNormal js-multirecommendCountButton u-disablePointerEvents"}).text
         numlikes = re.findall(r"[-+]?\d*\.\d+|\d+", zalupa)[0]
@@ -63,9 +60,9 @@ def get_medium(res, theme):
             "class": "link u-baseColor--link avatar"}))
 
         headers = {"Range": "bytes=10"}
-        response = requests.get(authorlink, headers=headers).text
+        # response = requests.get(authorlink, headers=headers).text
         # print(response)
-        soup = BeautifulSoup(response, "lxml")
+        soup = BeautifulSoup(results[0][i], "lxml")
         # print(soup)
         zalupa = soup.find_all("div", attrs={"class": "dq dr t"})
         numfollowers = float(0)
@@ -79,11 +76,11 @@ def get_medium(res, theme):
             if numfollowers[len(crunch)] == 'M':
                 realnum *= 1000000
             numfollowers = realnum
-        # print(numfollowers)
+        print(numfollowers)
         # print(newlist, '\n')
         # print(blocks[i], '\n')
         res.append(blocks[i].find("div", attrs={"class": "postArticle-content"}).find("a"))
-    # print(timer - time.time())
+    print(timer - time.time())
 
 
 def get_habr(res, theme):
