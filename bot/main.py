@@ -9,6 +9,7 @@ from bot.parser import get_topics, get_href
 from globals import *
 from data_processing.loading import *
 
+
 def waiting(func):
     def inner(update, context):
         print("waiting")
@@ -16,6 +17,7 @@ def waiting(func):
         query.answer()
         query.edit_message_text(text="loading")
         func(update, context)
+
     return inner
 
 
@@ -124,7 +126,8 @@ def do_input(update: Update, context: CallbackContext) -> None:
     else:
         # input the topic
         cur_users[user.id].start_topic_name = text
-        update.message.reply_text(text=news_with_rating_message(text), reply_markup=get_news_with_rating_keyboard(),
+        update.message.reply_text(text=news_with_rating_message(text, cur_users[user.id]),
+                                  reply_markup=get_news_with_rating_keyboard(),
                                   parse_mode=ParseMode.HTML)
     save_data()
 
@@ -223,8 +226,8 @@ def redraw_to_settings(query):
     query.edit_message_text(text=CHOOSE_THE_TYPE_OF_SETTINGS, reply_markup=get_settings_keyboard())
 
 
-def news_with_rating_message(topic):
-    news = find_news(topic)
+def news_with_rating_message(topic, user):
+    news = find_news(topic, user)
     if news == " ":
         return "Sorry, we didn't find anything 😥"
     return "Hey, nice choice! 👍\nHere are some " + topic + " news:\n" + news + "\n\n\nDo you like my compilation? 😳"
@@ -283,7 +286,7 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
                 else:
                     # "news" mode
                     cur_users[user.id].start_topic_name = topic_class.name
-                    query.edit_message_text(text=news_with_rating_message(topic_class.name),
+                    query.edit_message_text(text=news_with_rating_message(topic_class.name, cur_users[user.id]),
                                             reply_markup=get_news_with_rating_keyboard(), parse_mode=ParseMode.HTML)
         # "list settings" push
         if pushed_button_name == LIST_SETTINGS:
@@ -317,7 +320,8 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
                 else:
                     cur_users[user.id].personal_preferences.partial_fit(tops[0], 0)
                 query.edit_message_text(
-                    text=find_news(cur_users[user.id].start_topic_name) + "\n\n\nThank you for your feedback! 🙏",
+                    text=find_news(cur_users[user.id].start_topic_name,
+                                   cur_users[user.id]) + "\n\n\nThank you for your feedback! 🙏",
                     reply_markup=get_back_to_start_keyboard(), parse_mode=ParseMode.HTML)
         # "back to start" pushed
         if pushed_button_name == BACK_TO_START:
@@ -332,14 +336,15 @@ def keyboard_processing(update: Update, context: CallbackContext) -> None:
 
 tops = []
 
+
 # parsing call
-def find_news(topic):
+def find_news(topic, user):
     global tops
-    tops = get_topics(topic)
+    tops = get_topics(topic, user)
     if tops == []:
         return " "
     result = "Choose one of this topics:\n1)" + \
-             get_href(tops[0]) + "\n2)" + get_href(tops[1]) + "\n3)" + get_href(tops[2])
+             get_href(tops[-1].link) + "\n2)" + get_href(tops[-2].link) + "\n3)" + get_href(tops[-3].link)
     return result
 
 
