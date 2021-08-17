@@ -27,13 +27,18 @@ def get_medium(res, theme):
     blocks = soup.find_all("div", attrs={
         "class": "postArticle postArticle--short js-postArticle js-trackPostPresentation"})
     timer = time.time()
+
     links_author = []
+    links_articles = []
     for i in range(0, len(blocks)):
         links_author.append(get_link(blocks[i].find("a", attrs={
             "class": "link u-baseColor--link avatar"})))
-    results = []
-    dow_all(links_author, results)
-    print(len(results[0]))
+        links_articles.append(get_link(blocks[i].find("div", attrs={"class": "postArticle-content"}).find("a")))
+    results_author = []
+    results_articles = []
+    dow_all(links_author, results_author)
+    dow_all(links_articles, results_articles)
+    print(len(results_author[0]))
 
     for i in range(0, len(blocks)):
         newlist = []
@@ -62,7 +67,7 @@ def get_medium(res, theme):
         headers = {"Range": "bytes=10"}
         # response = requests.get(authorlink, headers=headers).text
         # print(response)
-        soup = BeautifulSoup(results[0][i], "lxml")
+        soup = BeautifulSoup(results_author[0][i], "lxml")
         # print(soup)
         zalupa = soup.find_all("div", attrs={"class": "dq dr t"})
         numfollowers = float(0)
@@ -79,6 +84,8 @@ def get_medium(res, theme):
         print(numfollowers)
         # print(newlist, '\n')
         # print(blocks[i], '\n')
+        soup = BeautifulSoup(results_articles[0][i], "lxml")
+        numpictures = len(soup.find_all("figure"))
         res.append(blocks[i].find("div", attrs={"class": "postArticle-content"}).find("a"))
     print(timer - time.time())
 
@@ -90,6 +97,8 @@ def get_habr(res, theme):
     # print(link_habr)
     blocks = soup.find_all("article")
     for i in blocks:
+        print(i.find("a"))
+    for i in blocks:
         numcomments = float(re.findall(r"[-+]?\d*\.\d+|\d+", i.find("div", attrs={"title": "Read comments"}).text)[0])
         numlikes = i.find("div", attrs={"class": "tm-votes-meter tm-data-icons__item"}).text
         zalupa = (re.findall(r"[-+]?\d*\.\d+|\d+", numlikes))
@@ -100,7 +109,7 @@ def get_habr(res, theme):
 def get_topics(theme):
     res = []
     get_medium(res, theme)
-    get_habr(res, theme)
+    # get_habr(res, theme)
     return res
 
 
