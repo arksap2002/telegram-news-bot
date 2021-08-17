@@ -12,15 +12,15 @@ import random
 class Neural:
     def __init__(self):
         self.regressor = SGDRegressor(loss='huber', learning_rate='adaptive', eta0=0.5)
-        self.samples = []
-        self.grades = []
+        self.samples = [np.array([random.randint(0, 1000), random.randint(0, 2000), random.randint(2000, 10000), 0])]
+        self.grades = [10.0]
     def partial_fit(self, article_info: Article, grade: float):
-        sample = np.array([article_info.likes, article_info.comments, article_info.size, article_info.image_count])
+        sample = np.array([article_info.likes, article_info.comments, article_info.num_followers, article_info.image_count])
         #sample = [article_info.size]
         self.samples.append(sample)
         self.grades.append(grade)
     def predict(self, article_info: Article):
-        sample = np.array([article_info.likes, article_info.comments, article_info.size, article_info.image_count])
+        sample = np.array([article_info.likes, article_info.comments, article_info.num_followers, article_info.image_count])
         if (len(self.samples) > 0):
             self.regressor.fit(self.samples, self.grades)
             global_model.regressor.fit(self.samples, self.grades)
@@ -44,5 +44,6 @@ def train():
 
 
 global_model = Neural()
+
 def global_predict(article: Article):
     return global_model.predict(article)

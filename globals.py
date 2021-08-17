@@ -68,10 +68,10 @@ MODE = 0
 SETTINGS_TOPIC_NAME = ""
 
 class Article:
-    def __init__(self, likes, comments, size, image_count, link):
+    def __init__(self, likes, comments, num_followers, image_count, link):
         self.likes = likes
         self.comments = comments
-        self.size = size
+        self.num_followers = num_followers
         self.image_count = image_count
         self.link = link
 
