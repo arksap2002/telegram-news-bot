@@ -1,2 +1,4 @@
-__*
+__p*
 venv
+/bot/config.py
+/bot/user_data.pkl
